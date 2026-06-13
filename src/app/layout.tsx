@@ -4,6 +4,7 @@ import "./globals.css";
 import { cn } from "@/lib/utils";
 import { ThemeProvider } from "@/theme/provider";
 import { Toaster } from "sonner";
+import { ConvexAuthNextJsProvider } from "@convex-dev/auth/nextjs";
 
 const jetbrainsMono = JetBrains_Mono({subsets:['latin'],variable:'--font-mono'});
 
@@ -28,6 +29,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
+    <ConvexAuthNextJsProvider>
     <html
       lang="en"
       suppressHydrationWarning
@@ -38,5 +40,6 @@ export default function RootLayout({
         </ThemeProvider>
         </body>
     </html>
+    </ConvexAuthNextJsProvider>
   );
 }
