@@ -4,7 +4,9 @@ import "./globals.css";
 import { cn } from "@/lib/utils";
 import { ThemeProvider } from "@/theme/provider";
 import { Toaster } from "sonner";
-import { ConvexAuthNextJsProvider } from "@convex-dev/auth/nextjs";
+import { ConvexAuthNextjsServerProvider } from "@convex-dev/auth/nextjs/server";
+import { ConvexClientProvider } from "@/components/convex-client-provider";
+
 
 const jetbrainsMono = JetBrains_Mono({subsets:['latin'],variable:'--font-mono'});
 
@@ -29,17 +31,19 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ConvexAuthNextJsProvider>
+    <ConvexAuthNextjsServerProvider>
     <html
       lang="en"
       suppressHydrationWarning
       className={cn("h-full", "antialiased", geistSans.variable, geistMono.variable, "font-mono", jetbrainsMono.variable)}
     >
       <body className="min-h-full flex flex-col">
+        <ConvexClientProvider> 
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange> {children} <Toaster position="top-right" />
         </ThemeProvider>
+        </ConvexClientProvider>
         </body>
     </html>
-    </ConvexAuthNextJsProvider>
+    </ConvexAuthNextjsServerProvider>
   );
 }
