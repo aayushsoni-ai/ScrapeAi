@@ -6,17 +6,13 @@ import { Label } from '@/components/ui/label'
 import { useAuth } from '@/hooks/use-auth'
 import Link from 'next/link'
 import { Loader2 } from "lucide-react";
-import Google from '@/components/oauth/google'
-import Microsoft from '@/components/oauth/microsoft'
-import { useConvexAuth } from '@convex-dev/auth/react'
-import { useRouter } from 'next/router'
-import { useEffect } from 'react'
-
+import Google from '@/components/button/oauth/google'
+import Microsoft from '@/components/button/oauth/microsoft' 
 export default function LoginPage() {
 
    
    const {signInForm, handleSignIn,isLoading} =  useAuth()
-   const {register, handleSubmit, formState: {errors} ,} = signInForm
+   const {register, formState: {errors} ,} = signInForm
 
     return (
         <section className="flex min-h-screen bg-zinc-50 px-4 py-16 md:py-32 dark:bg-transparent">
