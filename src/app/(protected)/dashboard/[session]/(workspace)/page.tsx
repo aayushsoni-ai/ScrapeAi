@@ -3,7 +3,7 @@ import ProjectsProvider from '@/components/projects/list/provider'
 import { ProjectQuery } from '@/convex/query.config'
 import React from 'react'
 
-const Page = async() => {
+const WorkspacePage = async() => {
   const {projects , profile} = await ProjectQuery()
 
   if (!profile) {
@@ -30,4 +30,4 @@ const Page = async() => {
   )
 }
 
-export default Page
+export default WorkspacePage

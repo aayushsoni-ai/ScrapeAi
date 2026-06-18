@@ -8,7 +8,7 @@ import { Id } from '../../../convex/_generated/dataModel'
 import { CircleQuestionMark, Hash, LayoutTemplate, User } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar'
 import { Button } from '../ui/button'
-import { store, useAppSelector } from '@/redux/store'
+import { useAppSelector } from '@/redux/store'
 import CreateProject from '../button/project'
 
 type TabProps = {
@@ -21,6 +21,7 @@ const Navbar = () => {
     const params = useSearchParams()
 
     const projectId = params.get('project')
+    const isValidProjectId = projectId && projectId !== 'null' && projectId !== 'undefined';
     const pathname = usePathname()
 
     const me = useAppSelector((state)=>state.profile)
@@ -28,19 +29,19 @@ const Navbar = () => {
     const tabs: TabProps[] = [
         {
             label: "Canvas",
-            href: `/dashboard/${me.name}/canvas?project=${projectId}`,
+            href: `/dashboard/${me.name}/canvas` + (isValidProjectId ? `?project=${projectId}` : ''),
             icon: <Hash className="h-4 w-4" />,
         },
         {
             label: "Style Guide",
-            href: `/dashboard/${me.name}/style-guide?project=${projectId}`,
+            href: `/dashboard/${me.name}/style-guide` + (isValidProjectId ? `?project=${projectId}` : ''),
             icon: <LayoutTemplate className="h-4 w-4" />,
         },
     ];
 
     const project = useQuery(
         api.projects.getProject,
-        projectId ? { projectId: projectId as Id<'projects'> } : 'skip'
+        isValidProjectId ? { projectId: projectId as Id<'projects'> } : 'skip'
     )
     const hasCanvas = pathname.includes('canvas')
     const hasStyleGuide = pathname.includes('style-guide')
@@ -54,12 +55,12 @@ const Navbar = () => {
                 >
                     <div className="w-4 h-4 rounded-full bg-white"></div>
                 </Link>
-                {!hasCanvas ||
+                {project && (!hasCanvas ||
                     (!hasStyleGuide && (
                         <div className="lg:inline-block hidden rounded-full text-primary/60 border border-white/[0.12] backdrop-blur-xl bg-white/[0.08] px-4 py-2 text-sm saturate-150">
-                            Project / {project?.name}
+                            Project / {project.name}
                         </div>
-                    ))}
+                    )))}
             </div>
 
             <div className="lg:flex hidden items-center justify-center gap-2">
@@ -70,14 +71,14 @@ const Navbar = () => {
                             href={t.href}
                             className={[
                                 'group inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm transition',
-                                `${pathname}?project=${projectId}` === t.href
+                                (isValidProjectId ? `${pathname}?project=${projectId}` : pathname) === t.href
                                     ? 'bg-white/[0.12] text-white border border-white/[0.16] backdrop-blur-sm'
                                     : 'text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.06] border border-transparent',
                             ].join(' ')}
                         >
                             <span
                                 className={
-                                    `${pathname}?project=${projectId}` === t.href
+                                    (isValidProjectId ? `${pathname}?project=${projectId}` : pathname) === t.href
                                         ? 'opacity-100'
                                         : 'opacity-70 group-hover:opacity-90'
                                 }
