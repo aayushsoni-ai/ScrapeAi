@@ -1,8 +1,8 @@
 'use client'
 import { useState, useCallback, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
-import { useSearchParams } from 'next/navigation'
-import { useMutation } from 'convex/react'
+import { useSearchParams, useRouter } from 'next/navigation'
+import { useMutation, useQuery } from 'convex/react'
 import { api } from '../../convex/_generated/api'
 import { Id } from '../../convex/_generated/dataModel'
 import { toast } from 'sonner'
@@ -29,7 +29,15 @@ export interface StylesFormData {
 export const useMoodBoard = (guideImages: MoodBoardImage[] = []) => {
     const [dragActive, setDragActive] = useState(false)
     const searchParams = useSearchParams()
+    const router = useRouter()
     const projectId = searchParams.get('project')
+
+    const dbImages = useQuery(
+        api.moodboard.getMoodBoardImages,
+        projectId ? { projectId: projectId as Id<'projects'> } : 'skip'
+    )
+
+    const activeImages = dbImages || guideImages
 
     const form = useForm<StylesFormData>({
         defaultValues: {
@@ -89,8 +97,8 @@ export const useMoodBoard = (guideImages: MoodBoardImage[] = []) => {
 
     // Populate images from database when loaded
     useEffect(() => {
-        if (guideImages && guideImages.length > 0) {
-            const serverImages: MoodBoardImage[] = guideImages.map((img: any) => ({
+        if (activeImages && activeImages.length > 0) {
+            const serverImages: MoodBoardImage[] = activeImages.map((img: any) => ({
                 id: img.id,
                 preview: img.url,
                 storageId: img.storageId,
@@ -123,7 +131,7 @@ export const useMoodBoard = (guideImages: MoodBoardImage[] = []) => {
                 setValue('images', mergedImages)
             }
         }
-    }, [guideImages, setValue, getValues])
+    }, [activeImages, setValue, getValues])
 
     const canAddMore = images.length < 6
 
@@ -159,6 +167,7 @@ export const useMoodBoard = (guideImages: MoodBoardImage[] = []) => {
                     projectId: projectId as Id<'projects'>,
                     storageId: imageToRemove.storageId as Id<'_storage'>,
                 })
+                router.refresh()
             } catch (error) {
                 console.error(error)
                 toast.error('Failed to remove image from server')
@@ -250,6 +259,7 @@ export const useMoodBoard = (guideImages: MoodBoardImage[] = []) => {
                         }
 
                         toast.success('Image uploaded')
+                        router.refresh()
                     } catch (error) {
 
                     }
