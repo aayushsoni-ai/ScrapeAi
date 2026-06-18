@@ -5,10 +5,9 @@ import { cn } from "@/lib/utils";
 import { ThemeProvider } from "@/theme/ThemeProvider";
 import { Toaster } from "sonner";
 import { ConvexAuthNextjsServerProvider } from "@convex-dev/auth/nextjs/server";
-import { ConvexClientProvider } from "@/components/convex-client-provider";
+import { ConvexClientProvider } from "@/convex/convex-client-provider";
 import ReduxProvider from "@/redux/provider";
 import { ProfileQuery } from "@/convex/query.config";
-import { normalize } from "path";
 import { ConvexUserRaw, normalizeProfile } from "@/types/user";
 
 
@@ -49,7 +48,7 @@ export default async function RootLayout({
       <body className="min-h-full flex flex-col">
         <ConvexClientProvider> 
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
-          <ReduxProvider preloadedState={{ profile}}>{children} <Toaster position="top-right" />
+          <ReduxProvider preloadedState={{ profile}}>{children} <Toaster position="bottom-right" />
             </ReduxProvider> 
         </ThemeProvider>
         </ConvexClientProvider>

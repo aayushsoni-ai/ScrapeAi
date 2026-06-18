@@ -2,7 +2,7 @@ import { SubscriptionEntitlementQuery } from '@/convex/query.config';
 import { redirect } from 'next/navigation';
 import { combinedSlug } from '@/lib/utils';
 
-const Page = async() => {
+const DashboardPage = async() => {
     const {entitlement, profile: profileName} = await SubscriptionEntitlementQuery()
     if(!entitlement._valueJSON){
         // redirect(`billing/${combinedSlug(profileName!)}`)
@@ -10,4 +10,4 @@ const Page = async() => {
     }
     redirect(`/dashboard/${combinedSlug(profileName!)}`)
 }
-export default Page
+export default DashboardPage

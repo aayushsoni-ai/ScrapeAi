@@ -8,7 +8,7 @@ type Props = {
     children: React.ReactNode
 }
 
-const Layout = async({children}: Props) => {
+const WorkspaceLayout = async({children}: Props) => {
     // const {entitlement, profile: profileName} = await SubscriptionEntitlementQuery()
     // if(!entitlement._valueJSON){
     //     redirect(`/dashboard/${combinedSlug(profileName!)}`)
@@ -19,4 +19,4 @@ const Layout = async({children}: Props) => {
   
 }
 
-export default Layout
+export default WorkspaceLayout
