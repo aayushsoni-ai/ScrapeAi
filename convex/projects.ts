@@ -121,3 +121,34 @@ export const getProjectStyleGuide = query({
     return project.styleGuide ? JSON.parse(project.styleGuide) : null
   },
 })
+
+export const updateProjectSketches = mutation({
+  args: {
+    projectId: v.id('projects'),
+    sketchesData: v.any(),
+    viewportData: v.optional(v.any()),
+  },
+  handler: async (ctx, { projectId, sketchesData, viewportData }) => {
+    const userId = await getAuthUserId(ctx)
+    if (!userId) throw new Error('Not authenticated')
+
+    const project = await ctx.db.get(projectId)
+    if (!project) throw new Error('Project not found')
+
+    if (project.userId !== userId) {
+      throw new Error('Access denied')
+    }
+
+    const patch: any = {
+      sketchesData,
+      lastModified: Date.now(),
+    }
+
+    if (viewportData) {
+      patch.viewportData = viewportData
+    }
+
+    await ctx.db.patch(projectId, patch)
+    return { success: true }
+  },
+})

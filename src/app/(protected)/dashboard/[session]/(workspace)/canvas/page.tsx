@@ -1,60 +1,38 @@
-import { ThemeContent } from '@/components/styles/ThemeContent'
-import StyleGuideTypography from '@/components/styles/Typography'
-import { TabsContent } from '@/components/ui/tabs'
-import { MoodBoardImagesQuery, StyleGuideQuery } from '@/convex/query.config'
-import { MoodBoardImages } from '@/hooks/use-styles'
-import { StyleGuide } from '@/redux/api/style-guide'
-import { Palette } from 'lucide-react'
+
+import InfiniteCanvas from '@/components/canvas/InfiniteCanvas'
+import ProjectProvider from '@/components/projects/provider'
+import { ProjectQuery } from '@/convex/query.config'
 import React from 'react'
 
-type Props = {
-    searchParams: Promise<{
-        project: string
-    }>
+interface CanvasPageProps {
+    searchParams: Promise<{ project?: string }>
 }
 
-const CanvasPage = async ({ searchParams }: Props) => {
-    const projectId = (await searchParams).project
-    const existingStyleGuide = await StyleGuideQuery(projectId)
-    const guide = existingStyleGuide.styleGuide?._valueJSON as unknown as StyleGuide
+const CanvasPage = async ({ searchParams }: CanvasPageProps) => {
+    const params = await searchParams
+    const projectId = params.project
 
-    const colorGuide = guide?.colorSections || []
-    const typographyGuide = guide?.typographySections || []
+    if (!projectId) {
+        return (
+            <div className="w-full h-screen flex items-center justify-center">
+                <p className="text-muted-foreground">No project selected</p>
+            </div>
+        )
+    }
 
-    const existingMoodBoardImages = await MoodBoardImagesQuery(projectId)
-    const guideImages = existingMoodBoardImages.images._valueJSON as unknown as MoodBoardImages[]
+    const { project, profile } = await ProjectQuery(projectId)
 
+    if (!profile) {
+        return (
+            <div className="w-full h-screen flex items-center justify-center">
+                <p className="text-muted-foreground">Authentication required</p>
+            </div>
+        )
+    }
     return (
-        <div>
-            <TabsContent
-                value='colours'
-                className="space-y-8"
-            >
-                {!guideImages.length ? (
-                    <div className="space-y-8">
-                        <div className="text-center py-20">
-                            <div className="w-16 h-16 mx-auto mb-4 rounded-lg bg-muted flex items-center justify-center">
-                                <Palette className="w-8 h-8 text-muted-foreground" />
-                            </div>
-                            <h3 className="text-lg font-medium text-foreground mb-2">
-                                No colors generated yet
-                            </h3>
-                            <p className="text-sm text-muted-foreground max-w-md mx-auto mb-6">
-                                Upload images to your mood board and generate an AI-powered
-                                style guide with colors and typography.
-                            </p>
-                        </div>
-                    </div>
-                ) : (
-                    <ThemeContent colorGuide={colorGuide} />
-                )}
-
-            </TabsContent>
-
-            <TabsContent value="typography">
-                <StyleGuideTypography typographyGuide={typographyGuide} />
-            </TabsContent>
-        </div>
+        <ProjectProvider initialProject={project}>
+            <InfiniteCanvas />
+        </ProjectProvider>
     )
 }
 
