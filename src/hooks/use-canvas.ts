@@ -1,4 +1,5 @@
 'use client'
+import { downloadBlob, generateFrameSnapshot } from '@/lib/frame-snapshot';
 import { handToolDisable, handToolEnable, panEnd, panMove, panStart, Point, screenToWorld, wheelPan, wheelZoom } from './../redux/slice/viewport/index';
 import { addArrow, addEllipse, addFrame, addFreeDrawShape, addLine, addRect, addText, clearSelection, removeShape, selectShape, setTool, Shape, Tool, updateShape, FrameShape } from '@/redux/slice/shapes'
 import { AppDispatch, useAppSelector } from '@/redux/store'
@@ -1019,9 +1020,24 @@ export const useInfiniteCanvas = () => {
 }
 
 export const useFrame = (shape: FrameShape) => {
-    const [isGenerating, setIsGenerating] = useState()
+    const dispatch = useDispatch()
+    const [isGenerating, setIsGenerating] = useState(false)
 
-    const handleGenerateDesign = () => { }
+    const allShapes = useAppSelector((state) => Object.values(state.shapes.shapes?.entities || {}).filter((shape): shape is Shape => shape !== undefined))
+
+
+
+    const handleGenerateDesign = async () => {
+        try {
+            setIsGenerating(true)
+            const snapshot = await generateFrameSnapshot(shape, allShapes)
+            downloadBlob(snapshot, `frame-${shape.frameNumber}-snapshot.png`)
+
+
+        } catch (error) {
+
+        }
+    }
 
     return {
         isGenerating, handleGenerateDesign
