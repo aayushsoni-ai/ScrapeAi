@@ -11,7 +11,7 @@ import { ProfileQuery } from "@/convex/query.config";
 import { ConvexUserRaw, normalizeProfile } from "@/types/user";
 
 
-const jetbrainsMono = JetBrains_Mono({subsets:['latin'],variable:'--font-mono'});
+const jetbrainsMono = JetBrains_Mono({ subsets: ['latin'], variable: '--font-mono' });
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -40,20 +40,20 @@ export default async function RootLayout({
   )
   return (
     <ConvexAuthNextjsServerProvider>
-    <html
-      lang="en"
-      suppressHydrationWarning
-      className={cn("h-full", "antialiased", geistSans.variable, geistMono.variable, "font-mono", jetbrainsMono.variable)}
-    >
-      <body className="min-h-full flex flex-col">
-        <ConvexClientProvider> 
-        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
-          <ReduxProvider preloadedState={{ profile}}>{children} <Toaster position="bottom-right" />
-            </ReduxProvider> 
-        </ThemeProvider>
-        </ConvexClientProvider>
+      <html
+        lang="en"
+        suppressHydrationWarning
+        className={cn("h-full", "antialiased", geistSans.variable, geistMono.variable, "font-mono", jetbrainsMono.variable,)}
+      >
+        <body className="min-h-full flex flex-col">
+          <ConvexClientProvider>
+            <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
+              <ReduxProvider preloadedState={{ profile }}>{children} <Toaster position="bottom-right" />
+              </ReduxProvider>
+            </ThemeProvider>
+          </ConvexClientProvider>
         </body>
-    </html>
+      </html>
     </ConvexAuthNextjsServerProvider>
   );
 }
