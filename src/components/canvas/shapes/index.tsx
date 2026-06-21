@@ -10,7 +10,7 @@ import { Text } from './text'
 
 const ShapeRenderer = ({
     shape,
-    toggleInspiration,
+    toggleInspiration = () => {},
     toggleChat,
     generateWorkflow,
     exportDesign,
@@ -19,10 +19,10 @@ const ShapeRenderer = ({
     //TODO: ADD FRAME BUTTON
     //TODO: ADD generate UI button
     shape: Shape
-    toggleInspiration: () => void
-    toggleChat: (generatedUIId: string) => void
-    generateWorkflow: (generatedUIId: string) => void
-    exportDesign: (generatedUIId: string, element: HTMLElement | null) => void
+    toggleInspiration?: () => void
+    toggleChat?: (generatedUIId: string) => void
+    generateWorkflow?: (generatedUIId: string) => void
+    exportDesign?: (generatedUIId: string, element: HTMLElement | null) => void
 }) => {
     switch (shape.type) {
         case 'frame':

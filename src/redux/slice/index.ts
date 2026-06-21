@@ -5,7 +5,7 @@ import projects from './projects'
 import shapes from './shapes'
 import viewport from './viewport'
 
-export const slices: Record<string , Reducer> = {
+export const slices = {
     profile,
     projects,
     shapes,

@@ -1,6 +1,8 @@
 import { v } from 'convex/values'
 import { mutation, query } from './_generated/server'
 import { getAuthUserId } from '@convex-dev/auth/server'
+import { Id } from './_generated/dataModel'
+
 
 export const getProject = query({
   args: { projectId: v.id('projects') },
@@ -127,9 +129,13 @@ export const updateProjectSketches = mutation({
     projectId: v.id('projects'),
     sketchesData: v.any(),
     viewportData: v.optional(v.any()),
+    userId: v.optional(v.id('users')),
   },
-  handler: async (ctx, { projectId, sketchesData, viewportData }) => {
-    const userId = await getAuthUserId(ctx)
+  handler: async (ctx, { projectId, sketchesData, viewportData, userId: argUserId }) => {
+    let userId: Id<'users'> | null = await getAuthUserId(ctx)
+    if (!userId) {
+      userId = argUserId || null
+    }
     if (!userId) throw new Error('Not authenticated')
 
     const project = await ctx.db.get(projectId)
@@ -139,16 +145,16 @@ export const updateProjectSketches = mutation({
       throw new Error('Access denied')
     }
 
-    const patch: any = {
+    const updateData: any = {
       sketchesData,
       lastModified: Date.now(),
     }
 
     if (viewportData) {
-      patch.viewportData = viewportData
+      updateData.viewportData = viewportData
     }
 
-    await ctx.db.patch(projectId, patch)
+    await ctx.db.patch(projectId, updateData)
     return { success: true }
   },
 })

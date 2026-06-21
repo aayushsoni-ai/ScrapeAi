@@ -24,7 +24,13 @@ export const useInfiniteCanvas = () => {
     const dispatch = useDispatch<AppDispatch>()
 
     const viewport = useAppSelector((s) => s.viewport)
-    const entityState = useAppSelector((s) => s.shapes.shapes)
+    const entityState = useAppSelector((s) => {
+        const shapes = s.shapes?.shapes
+        if (!shapes || !shapes.ids || !shapes.entities) {
+            return { ids: [] as string[], entities: {} as Record<string, Shape | undefined> }
+        }
+        return shapes
+    })
     const shapeList: Shape[] = entityState.ids
         .map((id: string) => entityState.entities[id])
         .filter((s: Shape | undefined): s is Shape => Boolean(s))
@@ -33,7 +39,7 @@ export const useInfiniteCanvas = () => {
     const selectedShapes = useAppSelector((s) => s.shapes.selected)
 
     const [isSidebarOpen, setIsSidebarOpen] = useState(false)
-    const shapesEntities = useAppSelector((state) => state.shapes.shapes.entities)
+    const shapesEntities = useAppSelector((state) => state.shapes.shapes?.entities || {})
 
     const hasSelectedText = Object.keys(selectedShapes).some((id) => {
         const shape = shapesEntities[id]
@@ -1032,6 +1038,15 @@ export const useFrame = (shape: FrameShape) => {
             setIsGenerating(true)
             const snapshot = await generateFrameSnapshot(shape, allShapes)
             downloadBlob(snapshot, `frame-${shape.frameNumber}-snapshot.png`)
+            const formData = new FormData()
+            formData.append('image', snapshot, `frame-${shape.frameNumber}.png`)
+            formData.append('frameNumber', shape.frameNumber.toString())
+
+            const urlParams = new URLSearchParams(window.location.search)
+            const projectId = urlParams.get('project')
+            if (projectId) {
+                formData.append('projectId', projectId)
+            }
 
 
         } catch (error) {

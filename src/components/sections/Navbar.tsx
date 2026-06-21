@@ -10,6 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar'
 import { Button } from '../ui/button'
 import { useAppSelector } from '@/redux/store'
 import CreateProject from '../button/project'
+import AutoSave from '../canvas/autosave/Autosave'
 
 type TabProps = {
     label: string,
@@ -24,17 +25,17 @@ const Navbar = () => {
     const isValidProjectId = projectId && projectId !== 'null' && projectId !== 'undefined';
     const pathname = usePathname()
 
-    const me = useAppSelector((state)=>state.profile)
+    const me = useAppSelector((state) => state.profile.user)
 
     const tabs: TabProps[] = [
         {
             label: "Canvas",
-            href: `/dashboard/${me.name}/canvas` + (isValidProjectId ? `?project=${projectId}` : ''),
+            href: `/dashboard/${me?.name || ''}/canvas` + (isValidProjectId ? `?project=${projectId}` : ''),
             icon: <Hash className="h-4 w-4" />,
         },
         {
             label: "Style Guide",
-            href: `/dashboard/${me.name}/style-guide` + (isValidProjectId ? `?project=${projectId}` : ''),
+            href: `/dashboard/${me?.name || ''}/style-guide` + (isValidProjectId ? `?project=${projectId}` : ''),
             icon: <LayoutTemplate className="h-4 w-4" />,
         },
     ];
@@ -50,7 +51,7 @@ const Navbar = () => {
         <div className="grid grid-cols-2 lg:grid-cols-3 p-6 fixed top-0 left-0 right-0 z-50">
             <div className="flex items-center gap-4">
                 <Link
-                    href={`/dashboard/${me.name}`}
+                    href={`/dashboard/${me?.name || ''}`}
                     className="w-8 h-8 rounded-full border-3 border-white bg-black flex items-center justify-center"
                 >
                     <div className="w-4 h-4 rounded-full bg-white"></div>
@@ -92,22 +93,22 @@ const Navbar = () => {
             </div>
 
             <div className="flex items-center gap-4 justify-end">
-    <span className="text-sm text-white/50">TODO: credits</span>
-    <Button
-        variant="secondary"
-        className="rounded-full h-12 w-12 flex items-center justify-center backdrop-blur-xl bg-white/[0.08] border border-white/[0.12] saturate-150 hover:bg-white/[0.12]"
-    >
-        <CircleQuestionMark className="size-5 text-white" />
-    </Button>
-    <Avatar className="size-12 ml-2">
-        <AvatarImage src={me.image || ''} />
-        <AvatarFallback>
-            <User className="size-5 text-black" />
-        </AvatarFallback>
-    </Avatar>
-    {/* {hasCanvas && <Autosave />} */}
-    {!hasCanvas && !hasStyleGuide && <CreateProject />}
-</div>
+                <span className="text-sm text-white/50">TODO: credits</span>
+                <Button
+                    variant="secondary"
+                    className="rounded-full h-12 w-12 flex items-center justify-center backdrop-blur-xl bg-white/[0.08] border border-white/[0.12] saturate-150 hover:bg-white/[0.12]"
+                >
+                    <CircleQuestionMark className="size-5 text-white" />
+                </Button>
+                <Avatar className="size-12 ml-2">
+                    <AvatarImage src={me?.image || ''} />
+                    <AvatarFallback>
+                        <User className="size-5 text-black" />
+                    </AvatarFallback>
+                </Avatar>
+                {hasCanvas && <AutoSave />}
+                {!hasCanvas && !hasStyleGuide && <CreateProject />}
+            </div>
 
         </div>
     )
