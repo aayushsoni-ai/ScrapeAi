@@ -1,4 +1,5 @@
 'use client'
+import { downloadBlob, generateFrameSnapshot } from '@/lib/frame-snapshot';
 import { handToolDisable, handToolEnable, panEnd, panMove, panStart, Point, screenToWorld, wheelPan, wheelZoom } from './../redux/slice/viewport/index';
 import { addArrow, addEllipse, addFrame, addFreeDrawShape, addLine, addRect, addText, clearSelection, removeShape, selectShape, setTool, Shape, Tool, updateShape, FrameShape } from '@/redux/slice/shapes'
 import { AppDispatch, useAppSelector } from '@/redux/store'
@@ -23,7 +24,13 @@ export const useInfiniteCanvas = () => {
     const dispatch = useDispatch<AppDispatch>()
 
     const viewport = useAppSelector((s) => s.viewport)
-    const entityState = useAppSelector((s) => s.shapes.shapes)
+    const entityState = useAppSelector((s) => {
+        const shapes = s.shapes?.shapes
+        if (!shapes || !shapes.ids || !shapes.entities) {
+            return { ids: [] as string[], entities: {} as Record<string, Shape | undefined> }
+        }
+        return shapes
+    })
     const shapeList: Shape[] = entityState.ids
         .map((id: string) => entityState.entities[id])
         .filter((s: Shape | undefined): s is Shape => Boolean(s))
@@ -32,7 +39,7 @@ export const useInfiniteCanvas = () => {
     const selectedShapes = useAppSelector((s) => s.shapes.selected)
 
     const [isSidebarOpen, setIsSidebarOpen] = useState(false)
-    const shapesEntities = useAppSelector((state) => state.shapes.shapes.entities)
+    const shapesEntities = useAppSelector((state) => state.shapes.shapes?.entities || {})
 
     const hasSelectedText = Object.keys(selectedShapes).some((id) => {
         const shape = shapesEntities[id]
@@ -1019,9 +1026,31 @@ export const useInfiniteCanvas = () => {
 }
 
 export const useFrame = (shape: FrameShape) => {
-    const [isGenerating, setIsGenerating] = useState()
+    const dispatch = useDispatch()
+    const [isGenerating, setIsGenerating] = useState(false)
 
-    const handleGenerateDesign = () => { }
+    const allShapes = useAppSelector((state) => Object.values(state.shapes.shapes?.entities || {}).filter((shape): shape is Shape => shape !== undefined))
+
+    const handleGenerateDesign = async () => {
+        try {
+            setIsGenerating(true)
+            const snapshot = await generateFrameSnapshot(shape, allShapes)
+            downloadBlob(snapshot, `frame-${shape.frameNumber}-snapshot.png`)
+            const formData = new FormData()
+            formData.append('image', snapshot, `frame-${shape.frameNumber}.png`)
+            formData.append('frameNumber', shape.frameNumber.toString())
+
+            const urlParams = new URLSearchParams(window.location.search)
+            const projectId = urlParams.get('project')
+            if (projectId) {
+                formData.append('projectId', projectId)
+            }
+        } catch (error) {
+            console.error("Failed to generate design:", error)
+        } finally {
+            setIsGenerating(false)
+        }
+    }
 
     return {
         isGenerating, handleGenerateDesign

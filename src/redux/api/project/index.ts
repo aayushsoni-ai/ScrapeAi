@@ -4,12 +4,7 @@ import { patchFetch } from 'next/dist/server/app-render/entry-base'
 interface AutosaveProjectRequest {
     projectId: string
     userId: string
-    shapesData: {
-        shapes: Record<string, unknown>
-        tool: string
-        selected: Record<string, unknown>
-        frameCounter: number
-    }
+    shapesData: any
     viewportData?: {
         scale: number
         translate: { x: number; y: number }
@@ -28,11 +23,13 @@ export const ProjectApi = createApi({
     tagTypes: ['Project'],
     endpoints: (builder) => ({
         autosaveProject: builder.mutation<AutosaveProjectResponse, AutosaveProjectRequest>({
-            query: (data)=>({
+            query: (data) => ({
                 url: '',
-                method: 'patch',
+                method: 'PATCH',
                 body: data,
             }),
         }),
     }),
 })
+
+export const { useAutosaveProjectMutation } = ProjectApi

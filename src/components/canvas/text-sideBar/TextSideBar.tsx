@@ -17,7 +17,7 @@ type Props = {
 const TextSideBar = ({ isOpen }: Props) => {
     const dispatch = useAppDispatch()
     const selectedShapes = useAppSelector((state) => state.shapes.selected)
-    const shapesEntities = useAppSelector((state) => state.shapes.shapes.entities)
+    const shapesEntities = useAppSelector((state) => state.shapes.shapes?.entities || {})
     const [colorInput, setColorInput] = useState('#ffffff')
 
     // Drag state

@@ -1,14 +1,8 @@
 'use client'
 import { useInfiniteCanvas } from '@/hooks/use-canvas'
-import React, { useEffect, useRef } from 'react'
+import React from 'react'
 import TextSideBar from './text-sideBar/TextSideBar'
-import { useMutation } from 'convex/react'
-import { api } from '../../../convex/_generated/api'
-import { useSearchParams } from 'next/navigation'
-import { useSelector } from 'react-redux'
-import { RootState } from '@/redux/store'
 import { Shape } from '@/redux/slice/shapes'
-import { Id } from '../../../convex/_generated/dataModel'
 import ShapeRenderer from './shapes'
 import { RectanglePreview } from "./shapes/rectangle/preview"
 import { FramePreview } from "./shapes/frame/preview"
@@ -21,48 +15,6 @@ import { SelectionOverlay } from "./shapes/selection"
 type Props = {}
 
 export default function InfiniteCanvas({ }: Props) {
-    const searchParams = useSearchParams()
-    const projectId = searchParams.get('project')
-
-    const updateSketches = useMutation(api.projects.updateProjectSketches)
-    const shapesState = useSelector((state: RootState) => state.shapes)
-    const viewportState = useSelector((state: RootState) => state.viewport)
-
-    const isInitializedRef = useRef(false)
-
-    // Wait until initial data is loaded from ProjectProvider
-    useEffect(() => {
-        if (shapesState.shapes.ids.length > 0 || viewportState.scale !== 1 || viewportState.translate.x !== 0) {
-            isInitializedRef.current = true
-        }
-    }, [shapesState.shapes.ids, viewportState.scale, viewportState.translate])
-
-    // Debounced autosave to Convex
-    useEffect(() => {
-        if (!projectId || !isInitializedRef.current) return
-
-        const handler = setTimeout(async () => {
-            try {
-                await updateSketches({
-                    projectId: projectId as Id<'projects'>,
-                    sketchesData: {
-                        shapes: shapesState.shapes,
-                        tool: shapesState.tool,
-                        selected: shapesState.selected,
-                        frameCounter: shapesState.frameCounter,
-                    },
-                    viewportData: {
-                        scale: viewportState.scale,
-                        translate: viewportState.translate,
-                    }
-                })
-            } catch (err) {
-                console.error('Autosave failed:', err)
-            }
-        }, 1500)
-
-        return () => clearTimeout(handler)
-    }, [shapesState, viewportState.scale, viewportState.translate, projectId, updateSketches])
 
     const {
         viewport,
@@ -85,47 +37,6 @@ export default function InfiniteCanvas({ }: Props) {
     const freeDrawPoints = getFreeDrawPoints()
     const eraserRect = getEraserRect()
 
-    // Handle resizing start with custom event dispatcher
-    const handleResizeStart = (e: React.MouseEvent, shape: Shape, corner: string) => {
-        e.stopPropagation()
-        e.preventDefault()
-
-        const bounds = {
-            x: 'x' in shape ? shape.x : ('startX' in shape ? Math.min(shape.startX, shape.endX) : 0),
-            y: 'y' in shape ? shape.y : ('startY' in shape ? Math.min(shape.startY, shape.endY) : 0),
-            w: 'w' in shape ? shape.w : ('startX' in shape ? Math.abs(shape.endX - shape.startX) : 0),
-            h: 'h' in shape ? shape.h : ('startY' in shape ? Math.abs(shape.endY - shape.startY) : 0),
-        }
-
-        const startEvent = new CustomEvent('shape-resize-start', {
-            detail: {
-                shapeId: shape.id,
-                corner,
-                bounds,
-                clientX: e.clientX,
-                clientY: e.clientY,
-            }
-        })
-        window.dispatchEvent(startEvent)
-
-        const handleMouseMove = (moveEvent: PointerEvent) => {
-            window.dispatchEvent(new CustomEvent('shape-resize-move', {
-                detail: {
-                    clientX: moveEvent.clientX,
-                    clientY: moveEvent.clientY,
-                }
-            }))
-        }
-
-        const handleMouseUp = () => {
-            window.dispatchEvent(new CustomEvent('shape-resize-end'))
-            window.removeEventListener('pointermove', handleMouseMove)
-            window.removeEventListener('pointerup', handleMouseUp)
-        }
-
-        window.addEventListener('pointermove', handleMouseMove)
-        window.addEventListener('pointerup', handleMouseUp)
-    }
 
     return (
         <div className="w-full h-full relative overflow-hidden select-none outline-none bg-[#09090b]">
@@ -239,35 +150,5 @@ export default function InfiniteCanvas({ }: Props) {
                 </div>
             </div>
         </div>
-    )
-}
-
-// Subcomponent to render resize handles
-interface ResizeHandlesProps {
-    shape: Shape
-    onResizeStart: (e: React.MouseEvent, shape: Shape, corner: string) => void
-}
-
-function ResizeHandles({ shape, onResizeStart }: ResizeHandlesProps) {
-    const handleClass = "absolute w-2 h-2 bg-white border border-blue-500 rounded-sm pointer-events-auto z-30 hover:scale-125 transition-transform"
-    return (
-        <>
-            <div
-                className={`${handleClass} -top-1 -left-1 cursor-nwse-resize`}
-                onPointerDown={(e) => onResizeStart(e, shape, 'nw')}
-            />
-            <div
-                className={`${handleClass} -top-1 -right-1 cursor-nesw-resize`}
-                onPointerDown={(e) => onResizeStart(e, shape, 'ne')}
-            />
-            <div
-                className={`${handleClass} -bottom-1 -left-1 cursor-nesw-resize`}
-                onPointerDown={(e) => onResizeStart(e, shape, 'sw')}
-            />
-            <div
-                className={`${handleClass} -bottom-1 -right-1 cursor-nwse-resize`}
-                onPointerDown={(e) => onResizeStart(e, shape, 'se')}
-            />
-        </>
     )
 }

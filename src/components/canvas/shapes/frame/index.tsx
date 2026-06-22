@@ -5,16 +5,16 @@ import { useFrame } from "@/hooks/use-canvas";
 
 export const Frame = ({
   shape,
-  toggleInspiration,
+  toggleInspiration = () => {},
 }: {
   shape: FrameShape;
-  toggleInspiration: () => void;
+  toggleInspiration?: () => void;
 }) => {
   const { isGenerating, handleGenerateDesign } = useFrame(shape);
 
   return (
     <div
-      className="group/frame absolute"
+      className="group/frame absolute backdrop-blur-xl saturate-150"
       style={{
         left: shape.x,
         top: shape.y,
