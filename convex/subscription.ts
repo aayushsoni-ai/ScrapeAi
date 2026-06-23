@@ -223,3 +223,77 @@ export const grantCreditsIfNeeded = mutation({
         return { ok: true, granted: grant, balance: next }
     },
 })
+
+export const getCreditsBalance = query({
+    args: { userId: v.id('users') },
+    handler: async (ctx, { userId }) => {
+        const sub = await ctx.db
+            .query('subscriptions')
+            .withIndex('by_userId', (q) => q.eq('userId', userId))
+            .first()
+
+        return sub?.creditsBalance ?? 0
+    },
+})
+
+export const consumeCredits = mutation({
+    args: {
+        userId: v.id('users'),
+        amount: v.number(),
+        reason: v.optional(v.string()),
+        idempotencyKey: v.optional(v.string()),
+    },
+    handler: async (ctx, { userId, amount, reason, idempotencyKey }) => {
+        // 1. Validate the input amount
+        if (amount <= 0) return { ok: false, error: 'invalid-amount' }
+
+        // 2. Handle Idempotency to prevent double-spending on network retries
+        if (idempotencyKey) {
+            const dupe = await ctx.db
+                .query('credits_ledger')
+                .withIndex('by_idempotencyKey', (q) =>
+                    q.eq('idempotencyKey', idempotencyKey)
+                )
+                .first()
+
+            if (dupe) {
+                return { ok: true, balance: (dupe.meta as any)?.next, idempotent: true }
+            }
+        }
+
+        // 3. Retrieve and validate the user's active subscription
+        const sub = await ctx.db
+            .query('subscriptions')
+            .withIndex('by_userId', (q) => q.eq('userId', userId))
+            .first()
+
+        if (!sub) return { ok: false, error: 'no-subscription' }
+        if (!ENTITLED.has(sub.status)) return { ok: false, error: 'not-entitled' }
+
+        // 4. Check if the user has enough credits available
+        if (sub.creditsBalance < amount) {
+            return {
+                ok: false,
+                error: 'insufficient-credits',
+                balance: sub.creditsBalance,
+            }
+        }
+
+        // 5. Deduct the credits and patch the subscription document
+        const next = sub.creditsBalance - amount
+        await ctx.db.patch(sub._id, { creditsBalance: next })
+
+        // 6. Log the transaction details inside the credits ledger table
+        await ctx.db.insert('credits_ledger', {
+            userId,
+            subscriptionId: sub._id,
+            amount: -amount,
+            type: 'consume',
+            reason: reason ?? 'usage',
+            idempotencyKey,
+            meta: { prev: sub.creditsBalance, next },
+        })
+
+        return { ok: true, balance: next }
+    },
+})

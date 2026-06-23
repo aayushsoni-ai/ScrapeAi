@@ -5,6 +5,8 @@ import { cn } from '@/lib/utils'
 import { UploadCloud } from 'lucide-react'
 import ImagesBoard from './ImagesBoard'
 import { Button } from '../ui/button'
+import { useSearchParams } from 'next/navigation'
+import GenerateStyleGuideButton from '../button/style-guide/GenerateStyleGuideButton'
 
 type Props = {
     guideImages: MoodBoardImages[]
@@ -62,6 +64,9 @@ const MoodBoard = ({ guideImages }: Props) => {
         handleFileInput,
         canAddMore
     } = useMoodBoard(guideImages)
+
+    const searchParams = useSearchParams()
+    const projectId = searchParams.get('project')
 
     const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -174,7 +179,12 @@ const MoodBoard = ({ guideImages }: Props) => {
                     </div>
                 )}
             </div>
-            <Button className='w-fit'>Generate with Ai</Button>
+
+            <GenerateStyleGuideButton
+                images={images}
+                fileInputRef={fileInputRef}
+                projectId={projectId || ''}
+            />
         </div>
     )
 }
