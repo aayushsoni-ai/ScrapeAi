@@ -1123,9 +1123,8 @@ export const useFrame = (shape: FrameShape) => {
             }
 
         } catch (error) {
-            toast.error(`Failed to generate UI degisn: ${error instanceof Error ? error.message : 'unknown Error'}`)
-        } catch (error) {
             console.error("Failed to generate design:", error)
+            toast.error(`Failed to generate UI design: ${error instanceof Error ? error.message : 'unknown Error'}`)
         } finally {
             setIsGenerating(false)
         }
