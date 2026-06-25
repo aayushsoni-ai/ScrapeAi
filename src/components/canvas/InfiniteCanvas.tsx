@@ -1,5 +1,5 @@
 'use client'
-import { useInfiniteCanvas } from '@/hooks/use-canvas'
+import { useGlobalChat, useInfiniteCanvas, useInspiration } from '@/hooks/use-canvas'
 import React from 'react'
 import TextSideBar from './text-sideBar/TextSideBar'
 import { Shape } from '@/redux/slice/shapes'
@@ -11,6 +11,7 @@ import { ArrowPreview } from "./shapes/arrow/preview"
 import { LinePreview } from "./shapes/line/preview"
 import { FreeDrawStrokePreview } from "./shapes/stroke/preview"
 import { SelectionOverlay } from "./shapes/selection"
+import InspirationSideBar from './shapes/inspiration-sidebar/InspirationSideBar'
 
 type Props = {}
 
@@ -33,6 +34,8 @@ export default function InfiniteCanvas({ }: Props) {
         getEraserRect,
     } = useInfiniteCanvas()
 
+    const { isInspirationOpen, closeInspiration, toggleInspiration } = useInspiration()
+    const { isChatOpen, activeGeneratedUIId, generateWorkflow } = useGlobalChat()
     const draftShape = getDraftShape()
     const freeDrawPoints = getFreeDrawPoints()
     const eraserRect = getEraserRect()
@@ -41,7 +44,10 @@ export default function InfiniteCanvas({ }: Props) {
     return (
         <div className="w-full h-full relative overflow-hidden select-none outline-none bg-[#09090b]">
             <TextSideBar isOpen={isSidebarOpen && hasSelectedText} />
+
             {/* Inspitartion */}
+            <InspirationSideBar isOpen={isInspirationOpen} onClose={closeInspiration} />
+
             {/* ChatWindow */}
 
 
@@ -78,10 +84,10 @@ export default function InfiniteCanvas({ }: Props) {
                         <ShapeRenderer
                             key={shape.id}
                             shape={shape}
-                        //  toggleInspiration={toggleInspiration}
-                        //  toggleChat={toggleChat}
-                        //  generateWorkflow={generateWorkflow}
-                        //  exportDesign={exportDesign}
+                            toggleInspiration={toggleInspiration}
+                            //  toggleChat={toggleChat}
+                            generateWorkflow={generateWorkflow}
+                        // exportDesign={exportDesign}
                         />
                     ))}
 

@@ -5,6 +5,8 @@ import { cn } from '@/lib/utils'
 import { UploadCloud } from 'lucide-react'
 import ImagesBoard from './ImagesBoard'
 import { Button } from '../ui/button'
+import { useSearchParams } from 'next/navigation'
+import GenerateStyleGuideButton from '../button/style-guide/GenerateStyleGuideButton'
 
 type Props = {
     guideImages: MoodBoardImages[]
@@ -63,6 +65,9 @@ const MoodBoard = ({ guideImages }: Props) => {
         canAddMore
     } = useMoodBoard(guideImages)
 
+    const searchParams = useSearchParams()
+    const projectId = searchParams.get('project')
+
     const fileInputRef = useRef<HTMLInputElement>(null)
 
     const onContainerClick = (e: React.MouseEvent) => {
@@ -84,7 +89,7 @@ const MoodBoard = ({ guideImages }: Props) => {
 
             <div
                 className={cn(
-                    'relative border-2 border-dashed rounded-3xl p-12 text-center transition-all duration-200 min-h-[400px] flex items-center justify-center cursor-pointer select-none overflow-hidden',
+                    'relative border-2 border-dashed rounded-3xl p-12 text-center transition-all duration-200 min-h-100 flex items-center justify-center cursor-pointer select-none overflow-hidden',
                     dragActive
                         ? 'border-primary bg-primary/5 scale-[1.02]'
                         : 'border-border/50 hover:border-border'
@@ -97,7 +102,7 @@ const MoodBoard = ({ guideImages }: Props) => {
             >
                 {/* Background Gradient */}
                 <div className="absolute inset-0 opacity-5 pointer-events-none">
-                    <div className="w-full h-full bg-gradient-to-br from-primary/20 to-transparent rounded-3xl" />
+                    <div className="w-full h-full bg-linear-to-br from-primary/20 to-transparent rounded-3xl" />
                 </div>
 
                 {/* Empty State Prompt */}
@@ -174,7 +179,12 @@ const MoodBoard = ({ guideImages }: Props) => {
                     </div>
                 )}
             </div>
-            <Button className='w-fit'>Generate with Ai</Button>
+
+            <GenerateStyleGuideButton
+                images={images}
+                fileInputRef={fileInputRef}
+                projectId={projectId || ''}
+            />
         </div>
     )
 }
