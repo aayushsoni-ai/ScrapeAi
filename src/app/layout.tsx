@@ -48,7 +48,9 @@ export default async function RootLayout({
         <body className="min-h-full flex flex-col">
           <ConvexClientProvider>
             <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
+
               <ReduxProvider preloadedState={{ profile: { user: profile } }}>{children} <Toaster position="bottom-right" />
+
               </ReduxProvider>
             </ThemeProvider>
           </ConvexClientProvider>

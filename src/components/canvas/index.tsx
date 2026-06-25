@@ -1,9 +1,7 @@
-'use client'
-import { useGlobalChat, useInfiniteCanvas, useInspiration } from '@/hooks/use-canvas'
-import React from 'react'
-import TextSideBar from './text-sideBar/TextSideBar'
-import { Shape } from '@/redux/slice/shapes'
-import ShapeRenderer from './shapes'
+import { useInfiniteCanvas } from "@/hooks/use-canvas"
+import TextSideBar from "./text-sideBar/TextSideBar"
+import { cn } from "@/lib/utils"
+import ShapeRenderer from "./shapes"
 import { RectanglePreview } from "./shapes/rectangle/preview"
 import { FramePreview } from "./shapes/frame/preview"
 import { ElipsePreview } from "./shapes/elipse/preview"
@@ -11,12 +9,11 @@ import { ArrowPreview } from "./shapes/arrow/preview"
 import { LinePreview } from "./shapes/line/preview"
 import { FreeDrawStrokePreview } from "./shapes/stroke/preview"
 import { SelectionOverlay } from "./shapes/selection"
-import InspirationSideBar from './shapes/inspiration-sidebar/InspirationSideBar'
 
 type Props = {}
-
-export default function InfiniteCanvas({ }: Props) {
-
+//todo: add inspiration and chat window
+//TODO: add back all props to the renderer
+const index = (props: Props) => {
     const {
         viewport,
         shapes,
@@ -27,39 +24,43 @@ export default function InfiniteCanvas({ }: Props) {
         onPointerUp,
         onPointerCancel,
         attachCanvasRef,
-        isSidebarOpen,
-        hasSelectedText,
         getDraftShape,
         getFreeDrawPoints,
-        getEraserRect,
+        isSidebarOpen,
+        hasSelectedText, getEraserRect,
     } = useInfiniteCanvas()
 
-    const { isInspirationOpen, closeInspiration, toggleInspiration } = useInspiration()
-    const { isChatOpen, activeGeneratedUIId, generateWorkflow } = useGlobalChat()
     const draftShape = getDraftShape()
     const freeDrawPoints = getFreeDrawPoints()
-    const eraserRect = getEraserRect()
-
 
     return (
-        <div className="w-full h-full relative overflow-hidden select-none outline-none bg-[#09090b]">
+        <>
             <TextSideBar isOpen={isSidebarOpen && hasSelectedText} />
-
             {/* Inspitartion */}
-            <InspirationSideBar isOpen={isInspirationOpen} onClose={closeInspiration} />
-
             {/* ChatWindow */}
 
-
-            {/* Interactive Canvas Area */}
             <div
                 ref={attachCanvasRef}
+                role="application"
+                aria-label="Infinite drawing canvas"
+                className={cn(
+                    'relative w-full h-full overflow-hidden select-none z-0',
+                    {
+                        'cursor-grabbing': viewport.mode === 'panning',
+                        'cursor-grab': viewport.mode === 'shiftPanning',
+                        'cursor-crosshair':
+                            currentTool !== 'select' && viewport.mode === 'idle',
+                        'cursor-default':
+                            currentTool === 'select' && viewport.mode === 'idle',
+                    }
+                )}
+                style={{ touchAction: 'none' }}
                 onPointerDown={onPointerDown}
                 onPointerMove={onPointerMove}
                 onPointerUp={onPointerUp}
                 onPointerCancel={onPointerCancel}
-                className="w-full h-full relative overflow-hidden outline-none touch-none"
-                style={{ cursor: currentTool === 'select' ? 'default' : 'crosshair' }}
+                onContextMenu={(e) => e.preventDefault()}
+                draggable={false}
             >
                 {/* SVG/Radial Grid Background */}
                 <div
@@ -71,7 +72,6 @@ export default function InfiniteCanvas({ }: Props) {
                     }}
                 />
 
-                {/* Viewport content */}
                 <div
                     className="absolute origin-top-left pointer-events-none z-10"
                     style={{
@@ -84,10 +84,10 @@ export default function InfiniteCanvas({ }: Props) {
                         <ShapeRenderer
                             key={shape.id}
                             shape={shape}
-                            toggleInspiration={toggleInspiration}
-                            //  toggleChat={toggleChat}
-                            generateWorkflow={generateWorkflow}
-                        // exportDesign={exportDesign}
+                        //  toggleInspiration={toggleInspiration}
+                        //  toggleChat={toggleChat}
+                        //  generateWorkflow={generateWorkflow}
+                        //  exportDesign={exportDesign}
                         />
                     ))}
 
@@ -136,7 +136,7 @@ export default function InfiniteCanvas({ }: Props) {
 
                     {/* Eraser Selection preview */}
                     {(() => {
-
+                        const eraserRect = getEraserRect()
                         if (!eraserRect) return null
                         return (
                             <div
@@ -155,6 +155,8 @@ export default function InfiniteCanvas({ }: Props) {
                     })()}
                 </div>
             </div>
-        </div>
+        </>
     )
 }
+
+export default index

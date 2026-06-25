@@ -1035,8 +1035,6 @@ export const useFrame = (shape: FrameShape) => {
 
     const allShapes = useAppSelector((state) => Object.values(state.shapes.shapes?.entities || {}).filter((shape): shape is Shape => shape !== undefined))
 
-
-
     const handleGenerateDesign = async () => {
         try {
             setIsGenerating(true)
@@ -1126,6 +1124,8 @@ export const useFrame = (shape: FrameShape) => {
 
         } catch (error) {
             toast.error(`Failed to generate UI degisn: ${error instanceof Error ? error.message : 'unknown Error'}`)
+        } catch (error) {
+            console.error("Failed to generate design:", error)
         } finally {
             setIsGenerating(false)
         }
