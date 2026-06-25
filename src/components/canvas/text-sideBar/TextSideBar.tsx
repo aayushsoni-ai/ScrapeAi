@@ -75,7 +75,7 @@ const TextSideBar = ({ isOpen }: Props) => {
         setIsDragging(true)
         dragStartRef.current = { x: e.clientX, y: e.clientY }
         posStartRef.current = { ...position }
-        ;(e.target as HTMLElement).setPointerCapture(e.pointerId)
+            ; (e.target as HTMLElement).setPointerCapture(e.pointerId)
     }, [position])
 
     const handleDragMove = useCallback((e: React.PointerEvent) => {
@@ -91,7 +91,7 @@ const TextSideBar = ({ isOpen }: Props) => {
 
     const handleDragEnd = useCallback((e: React.PointerEvent) => {
         setIsDragging(false)
-        ;(e.target as HTMLElement).releasePointerCapture(e.pointerId)
+            ; (e.target as HTMLElement).releasePointerCapture(e.pointerId)
     }, [])
 
     if (!isOpen || !selectedTextShape) return null
@@ -100,7 +100,7 @@ const TextSideBar = ({ isOpen }: Props) => {
         <div
             ref={panelRef}
             className={cn(
-                'fixed w-80 backdrop-blur-xl bg-white/[0.08] border-white/[0.12] gap-2 p-3 saturate-150 border rounded-lg z-50 transition-opacity duration-200',
+                'fixed w-80 backdrop-blur-xl bg-white/8 border-white/12 gap-2 p-3 saturate-150 border rounded-lg z-50 transition-opacity duration-200',
                 isDragging && 'cursor-grabbing select-none'
             )}
             style={
@@ -120,7 +120,7 @@ const TextSideBar = ({ isOpen }: Props) => {
         >
             {/* Drag handle */}
             <div
-                className="flex items-center justify-center py-1.5 cursor-grab active:cursor-grabbing rounded-t-lg -mt-1 mb-1 hover:bg-white/[0.04] transition-colors"
+                className="flex items-center justify-center py-1.5 cursor-grab active:cursor-grabbing rounded-t-lg -mt-1 mb-1 hover:bg-white/4 transition-colors"
                 onPointerDown={handleDragStart}
                 onPointerMove={handleDragMove}
                 onPointerUp={handleDragEnd}

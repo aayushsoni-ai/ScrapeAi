@@ -1,5 +1,5 @@
 'use client'
-import { useState, useCallback, useEffect, RefObject } from 'react'
+import { useState, useCallback, useEffect, RefObject, useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useMutation, useQuery } from 'convex/react'
@@ -7,6 +7,8 @@ import { api } from '../../convex/_generated/api'
 import { Id } from '../../convex/_generated/dataModel'
 import { toast } from 'sonner'
 import { useGenerateStyleGuideMutation } from '@/redux/api/style-guide'
+import { useAppDispatch } from '@/redux/store'
+import { GeneratedUIShape, updateShape } from '@/redux/slice/shapes'
 
 export interface MoodBoardImage {
     id: string
@@ -351,5 +353,47 @@ export const useStyleGuide = (
         handleGenerateStyleGuide,
         isGenerating,
         handleUploadClick,
+    }
+}
+
+
+export const useUpdateContainer = (shape: GeneratedUIShape) => {
+    const dispatch = useAppDispatch()
+    const containerRef = useRef<HTMLDivElement>(null)
+
+
+    useEffect(() => {
+        if (containerRef.current && shape.uiSpecData) {
+            const timeoutId = setTimeout(() => {
+                const actualHeight = containerRef.current?.offsetHeight || 0
+                if (actualHeight > 0 && Math.abs(actualHeight - shape.h) > 10) {
+                    dispatch(
+                        updateShape({
+                            id: shape.id,
+                            patch: { h: actualHeight },
+                        })
+                    )
+                }
+            }, 100)
+
+            return () => clearTimeout(timeoutId)
+        }
+    }, [shape.uiSpecData, shape.id, shape.h, dispatch])
+
+    // Enhanced HTML sanitization function for basic safety
+    const sanitizeHtml = (html: string) => {
+        const sanitized = html
+            .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+            .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '')
+            .replace(/on\w+="[^"]*"/gi, '') // Remove event handlers
+            .replace(/javascript:/gi, '') // Remove javascript: protocols
+            .replace(/data:/gi, '') // Remove data: protocols for safety
+
+        return sanitized
+    }
+
+    return {
+        sanitizeHtml,
+        containerRef,
     }
 }

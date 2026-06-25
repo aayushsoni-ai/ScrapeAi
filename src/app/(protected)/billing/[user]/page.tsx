@@ -47,7 +47,7 @@ const BillingPage = async () => {
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-lg">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-r from-primary to-primary/60 rounded-full mb-4 shadow-lg">
+          <div className="inline-flex items-center justify-center w-12 h-12 bg-linear-to-r from-primary to-primary/60 rounded-full mb-4 shadow-lg">
             <Sparkles className="w-6 h-6 text-primary-foreground" />
           </div>
           <h1 className="text-2xl font-bold text-foreground mb-3">
@@ -58,7 +58,7 @@ const BillingPage = async () => {
             creativity
           </p>
         </div>
-        <Card className="backdrop-blur-xl bg-white/[0.08] border border-white/[0.12] shadow-xl saturate-150">
+        <Card className="backdrop-blur-xl bg-white/8 border border-white/12 shadow-xl saturate-150">
           <CardHeader className="text-center pb-4">
             <div className="flex items-center justify-center mb-3">
               <Badge
@@ -94,8 +94,8 @@ const BillingPage = async () => {
               What&apos;s Included
             </h3>
             <div className="grid gap-2">
-              <div className="flex items-center gap-3 p-2 rounded-lg bg-white/[0.05] border border-white/[0.08]">
-                <div className="w-6 h-6 bg-primary/20 rounded-md flex items-center justify-center flex-shrink-0">
+              <div className="flex items-center gap-3 p-2 rounded-lg bg-white/5 border border-white/8">
+                <div className="w-6 h-6 bg-primary/20 rounded-md flex items-center justify-center shrink-0">
                   <Palette className="w-3 h-3 text-primary" />
                 </div>
                 <div>
@@ -108,8 +108,8 @@ const BillingPage = async () => {
                 </div>
               </div>
 
-              <div className="flex items-center gap-3 p-2 rounded-lg bg-white/[0.05] border border-white/[0.08]">
-                <div className="w-6 h-6 bg-primary/20 rounded-md flex items-center justify-center flex-shrink-0">
+              <div className="flex items-center gap-3 p-2 rounded-lg bg-white/5 border border-white/8">
+                <div className="w-6 h-6 bg-primary/20 rounded-md flex items-center justify-center shrink-0">
                   <Download className="w-3 h-3 text-primary" />
                 </div>
                 <div>
@@ -122,8 +122,8 @@ const BillingPage = async () => {
                 </div>
               </div>
 
-              <div className="flex items-center gap-3 p-2 rounded-lg bg-white/[0.05] border border-white/[0.08]">
-                <div className="w-6 h-6 bg-primary/20 rounded-md flex items-center justify-center flex-shrink-0">
+              <div className="flex items-center gap-3 p-2 rounded-lg bg-white/5 border border-white/8">
+                <div className="w-6 h-6 bg-primary/20 rounded-md flex items-center justify-center shrink-0">
                   <Code className="w-3 h-3 text-primary" />
                 </div>
                 <div>
@@ -136,8 +136,8 @@ const BillingPage = async () => {
                 </div>
               </div>
 
-              <div className="flex items-center gap-3 p-2 rounded-lg bg-white/[0.05] border border-white/[0.08]">
-                <div className="w-6 h-6 bg-primary/20 rounded-md flex items-center justify-center flex-shrink-0">
+              <div className="flex items-center gap-3 p-2 rounded-lg bg-white/5 border border-white/8">
+                <div className="w-6 h-6 bg-primary/20 rounded-md flex items-center justify-center shrink-0">
                   <Zap className="w-3 h-3 text-primary" />
                 </div>
                 <div>
@@ -153,7 +153,7 @@ const BillingPage = async () => {
 
             <div className="bg-primary/10 border border-primary/20 rounded-lg p-3">
               <div className="flex items-start gap-2">
-                <div className="w-5 h-5 bg-primary rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                <div className="w-5 h-5 bg-primary rounded-full flex items-center justify-center shrink-0 mt-0.5">
                   <Check className="w-2.5 h-2.5 text-primary-foreground" />
                 </div>
                 <div>

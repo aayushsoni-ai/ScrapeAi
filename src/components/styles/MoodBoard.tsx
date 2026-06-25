@@ -89,7 +89,7 @@ const MoodBoard = ({ guideImages }: Props) => {
 
             <div
                 className={cn(
-                    'relative border-2 border-dashed rounded-3xl p-12 text-center transition-all duration-200 min-h-[400px] flex items-center justify-center cursor-pointer select-none overflow-hidden',
+                    'relative border-2 border-dashed rounded-3xl p-12 text-center transition-all duration-200 min-h-100 flex items-center justify-center cursor-pointer select-none overflow-hidden',
                     dragActive
                         ? 'border-primary bg-primary/5 scale-[1.02]'
                         : 'border-border/50 hover:border-border'
@@ -102,7 +102,7 @@ const MoodBoard = ({ guideImages }: Props) => {
             >
                 {/* Background Gradient */}
                 <div className="absolute inset-0 opacity-5 pointer-events-none">
-                    <div className="w-full h-full bg-gradient-to-br from-primary/20 to-transparent rounded-3xl" />
+                    <div className="w-full h-full bg-linear-to-br from-primary/20 to-transparent rounded-3xl" />
                 </div>
 
                 {/* Empty State Prompt */}

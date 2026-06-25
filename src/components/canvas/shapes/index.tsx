@@ -7,10 +7,11 @@ import { Stroke } from './stroke'
 import { Arrow } from './arrow'
 import { Line } from './line'
 import { Text } from './text'
+import GeneratedUI from './generatedui'
 
 const ShapeRenderer = ({
     shape,
-    toggleInspiration = () => {},
+    toggleInspiration = () => { },
     toggleChat,
     generateWorkflow,
     exportDesign,
@@ -44,6 +45,18 @@ const ShapeRenderer = ({
             return <Line shape={shape} />
         case 'text':
             return <Text shape={shape} />
+        case 'generatedui':
+            return (
+                <GeneratedUI
+                    shape={shape}
+                    // toggleInspiration={toggleInspiration}
+                    toggleChat={toggleChat}
+                    generateWorkflow={generateWorkflow}
+                    exportDesign={exportDesign}
+                />
+            )
+        default:
+            return null
     }
 }
 
