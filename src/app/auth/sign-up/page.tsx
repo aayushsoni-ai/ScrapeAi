@@ -69,7 +69,7 @@ export default function LoginPage() {
                             />
                         </div>
 
-                        <Button className="w-full">Sign In</Button>
+                        <Button className="w-full">Sign Up</Button>
                     </div>
 
                     <div className="my-6 grid grid-cols-[1fr_auto_1fr] items-center gap-3">
@@ -91,7 +91,7 @@ export default function LoginPage() {
                             variant="link"
                             className="px-2"
                             nativeButton={false}
-                            render={<Link href="#">Sign In</Link>}
+                            render={<Link href="/auth/sign-in">Sign In</Link>}
                         />
                     </p>
                 </div>

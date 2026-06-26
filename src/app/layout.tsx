@@ -9,6 +9,7 @@ import { ConvexClientProvider } from "@/convex/convex-client-provider";
 import ReduxProvider from "@/redux/provider";
 import { ProfileQuery } from "@/convex/query.config";
 import { ConvexUserRaw, normalizeProfile } from "@/types/user";
+import { ProfileSync } from "@/components/sections/ProfileSync";
 
 
 const jetbrainsMono = JetBrains_Mono({ subsets: ['latin'], variable: '--font-mono' });
@@ -49,8 +50,10 @@ export default async function RootLayout({
           <ConvexClientProvider>
             <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
 
-              <ReduxProvider preloadedState={{ profile: { user: profile } }}>{children} <Toaster position="bottom-right" />
-
+              <ReduxProvider preloadedState={{ profile: { user: profile } }}>
+                <ProfileSync />
+                {children}
+                <Toaster position="bottom-right" />
               </ReduxProvider>
             </ThemeProvider>
           </ConvexClientProvider>

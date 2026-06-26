@@ -106,12 +106,19 @@ import {
   });
   
   type SelectionMap = Record<string, true>;
+
+  export interface HistoryState {
+    shapes: EntityState<Shape, string>;
+    frameCounter: number;
+  }
   
   interface ShapesState {
     tool: Tool;
     shapes: EntityState<Shape, string>;
     selected: SelectionMap;
     frameCounter: number;
+    past: HistoryState[];
+    future: HistoryState[];
   }
   
   const initialState: ShapesState = {
@@ -119,6 +126,26 @@ import {
     shapes: shapesAdapter.getInitialState(),
     selected: {},
     frameCounter: 0,
+    past: [],
+    future: [],
+  };
+
+  const pushToHistory = (state: ShapesState) => {
+    const entry: HistoryState = {
+      shapes: JSON.parse(JSON.stringify(state.shapes)),
+      frameCounter: state.frameCounter,
+    };
+    
+    const lastEntry = state.past[state.past.length - 1];
+    if (lastEntry && JSON.stringify(lastEntry.shapes) === JSON.stringify(entry.shapes)) {
+      return;
+    }
+    
+    state.past.push(entry);
+    if (state.past.length > 50) {
+      state.past.shift();
+    }
+    state.future = [];
   };
   
   const DEFAULTS = { stroke: "#ffff", strokeWidth: 2 as const };
@@ -317,6 +344,7 @@ import {
           Omit<Parameters<typeof makeFrame>[0], "frameNumber">
         >
       ) {
+        pushToHistory(state);
         state.frameCounter += 1;
         const frameWithNumber = {
           ...action.payload,
@@ -325,12 +353,14 @@ import {
         shapesAdapter.addOne(state.shapes, makeFrame(frameWithNumber));
       },
       addRect(state, action: PayloadAction<Parameters<typeof makeRect>[0]>) {
+        pushToHistory(state);
         shapesAdapter.addOne(state.shapes, makeRect(action.payload));
       },
       addEllipse(
         state,
         action: PayloadAction<Parameters<typeof makeEllipse>[0]>
       ) {
+        pushToHistory(state);
         shapesAdapter.addOne(state.shapes, makeEllipse(action.payload));
       },
       addFreeDrawShape(
@@ -339,34 +369,49 @@ import {
       ) {
         const { points } = action.payload;
         if (!points || points.length === 0) return;
+        pushToHistory(state);
         shapesAdapter.addOne(state.shapes, makeFree(action.payload));
       },
       addArrow(state, action: PayloadAction<Parameters<typeof makeArrow>[0]>) {
+        pushToHistory(state);
         shapesAdapter.addOne(state.shapes, makeArrow(action.payload));
       },
       addLine(state, action: PayloadAction<Parameters<typeof makeLine>[0]>) {
+        pushToHistory(state);
         shapesAdapter.addOne(state.shapes, makeLine(action.payload));
       },
       addText(state, action: PayloadAction<Parameters<typeof makeText>[0]>) {
+        pushToHistory(state);
         shapesAdapter.addOne(state.shapes, makeText(action.payload));
       },
       addGeneratedUI(
         state,
         action: PayloadAction<Parameters<typeof makeGeneratedUI>[0]>
       ) {
+        pushToHistory(state);
         shapesAdapter.addOne(state.shapes, makeGeneratedUI(action.payload));
       },
   
       updateShape(
         state,
-        action: PayloadAction<{ id: string; patch: Partial<Shape> }>
+        action: PayloadAction<{ id: string; patch: Partial<Shape>; isUndoable?: boolean }>
       ) {
-        const { id, patch } = action.payload;
+        const { id, patch, isUndoable } = action.payload;
+        if (isUndoable) {
+          pushToHistory(state);
+        }
         shapesAdapter.updateOne(state.shapes, { id, changes: patch });
       },
   
-      removeShape(state, action: PayloadAction<string>) {
-        const id = action.payload;
+      removeShape(state, action: PayloadAction<string | { id: string; isUndoable?: boolean }>) {
+        const payload = action.payload;
+        const id = typeof payload === "string" ? payload : payload.id;
+        const isUndoable = typeof payload === "string" ? false : payload.isUndoable;
+        
+        if (isUndoable) {
+          pushToHistory(state);
+        }
+        
         const shape = state.shapes.entities[id];
         if (shape?.type === "frame") {
           state.frameCounter = Math.max(0, state.frameCounter - 1);
@@ -376,6 +421,7 @@ import {
       },
   
       clearAll(state) {
+        pushToHistory(state);
         shapesAdapter.removeAll(state.shapes);
         state.selected = {};
         state.frameCounter = 0;
@@ -396,7 +442,10 @@ import {
       },
       deleteSelected(state) {
         const ids = Object.keys(state.selected);
-        if (ids.length) shapesAdapter.removeMany(state.shapes, ids);
+        if (ids.length) {
+          pushToHistory(state);
+          shapesAdapter.removeMany(state.shapes, ids);
+        }
         state.selected = {};
       },
       loadProject(
@@ -413,6 +462,37 @@ import {
         state.tool = action.payload.tool;
         state.selected = action.payload.selected;
         state.frameCounter = action.payload.frameCounter;
+        state.past = [];
+        state.future = [];
+      },
+      undo(state) {
+        const previous = state.past.pop();
+        if (previous) {
+          state.future.push({
+            shapes: JSON.parse(JSON.stringify(state.shapes)),
+            frameCounter: state.frameCounter,
+          });
+          state.shapes = previous.shapes;
+          state.frameCounter = previous.frameCounter;
+        }
+      },
+      redo(state) {
+        const next = state.future.pop();
+        if (next) {
+          state.past.push({
+            shapes: JSON.parse(JSON.stringify(state.shapes)),
+            frameCounter: state.frameCounter,
+          });
+          state.shapes = next.shapes;
+          state.frameCounter = next.frameCounter;
+        }
+      },
+      pushHistoryState(state, action: PayloadAction<HistoryState>) {
+        state.past.push(action.payload);
+        if (state.past.length > 50) {
+          state.past.shift();
+        }
+        state.future = [];
       },
     },
   });
@@ -436,6 +516,9 @@ import {
     selectAll,
     deleteSelected,
     loadProject,
+    undo,
+    redo,
+    pushHistoryState,
   } = shapesSlice.actions;
   
   export default shapesSlice.reducer;

@@ -1,14 +1,14 @@
-import { Workflow } from 'lucide-react';
 'use client'
-import { downloadBlob, generateFrameSnapshot } from '@/lib/frame-snapshot';
+import { downloadBlob, exportGeneratedUIAsPNG, generateFrameSnapshot } from '@/lib/frame-snapshot';
 import { handToolDisable, handToolEnable, panEnd, panMove, panStart, Point, screenToWorld, wheelPan, wheelZoom } from './../redux/slice/viewport/index';
-import { addArrow, addEllipse, addFrame, addFreeDrawShape, addLine, addRect, addText, clearSelection, removeShape, selectShape, setTool, Shape, Tool, updateShape, FrameShape, addGeneratedUI } from '@/redux/slice/shapes'
+import { addArrow, addEllipse, addFrame, addFreeDrawShape, addLine, addRect, addText, clearSelection, removeShape, selectShape, setTool, Shape, Tool, updateShape, FrameShape, addGeneratedUI, pushHistoryState, undo, redo } from '@/redux/slice/shapes'
 import { AppDispatch, useAppDispatch, useAppSelector } from '@/redux/store'
 import { useEffect, useRef, useState } from 'react'
 import { useDispatch } from 'react-redux'
 import { nanoid } from '@reduxjs/toolkit';
 import { toast } from 'sonner';
 import { useGenerateWorkflowMutation } from '@/redux/api/generation';
+import { addErrorMessage, addUserMessage, clearChat, finishStreamingResponse, initializeChat, startStreamingResponse, updateStreamingContent } from '@/redux/slice/chat';
 
 interface TouchPointer {
     id: number
@@ -44,6 +44,9 @@ export const useInfiniteCanvas = () => {
 
     const [isSidebarOpen, setIsSidebarOpen] = useState(false)
     const shapesEntities = useAppSelector((state) => state.shapes.shapes?.entities || {})
+    const shapesState = useAppSelector((state) => state.shapes)
+
+    const historySnapshotRef = useRef<{ shapes: any; frameCounter: number } | null>(null)
 
     const hasSelectedText = Object.keys(selectedShapes).some((id) => {
         const shape = shapesEntities[id]
@@ -391,6 +394,12 @@ export const useInfiniteCanvas = () => {
             return // Don't handle canvas interactions when clicking buttons
         }
 
+        // Capture canvas state before action begins
+        historySnapshotRef.current = {
+            shapes: JSON.parse(JSON.stringify(shapesState.shapes)),
+            frameCounter: shapesState.frameCounter,
+        }
+
         const local = getLocalPointFromPtr(e.nativeEvent)
         const world = screenToWorld(local, viewport.translate, viewport.scale)
 
@@ -734,6 +743,15 @@ export const useInfiniteCanvas = () => {
         }
 
         finalizeDrawingIfAny()
+
+        // Check if anything changed and commit history entry
+        if (historySnapshotRef.current) {
+            const hasChanged = JSON.stringify(historySnapshotRef.current.shapes) !== JSON.stringify(shapesState.shapes)
+            if (hasChanged) {
+                dispatch(pushHistoryState(historySnapshotRef.current))
+            }
+            historySnapshotRef.current = null
+        }
     }
 
     const onPointerCancel: React.PointerEventHandler<HTMLDivElement> = (e) => {
@@ -745,6 +763,29 @@ export const useInfiniteCanvas = () => {
             e.preventDefault()
             isSpacePressed.current = true // Keep the same ref name for consistency
             dispatch(handToolEnable())
+        }
+
+        // Handle Undo and Redo shortcuts
+        const activeEl = document.activeElement
+        const isTyping = activeEl && (
+            activeEl.tagName === 'INPUT' ||
+            activeEl.tagName === 'TEXTAREA' ||
+            activeEl.getAttribute('contenteditable') === 'true'
+        )
+
+        if (!isTyping) {
+            const isCmdOrCtrl = e.metaKey || e.ctrlKey
+            if (isCmdOrCtrl && e.key.toLowerCase() === 'z') {
+                e.preventDefault()
+                if (e.shiftKey) {
+                    dispatch(redo())
+                } else {
+                    dispatch(undo())
+                }
+            } else if (isCmdOrCtrl && e.key.toLowerCase() === 'y') {
+                e.preventDefault()
+                dispatch(redo())
+            }
         }
     }
 
@@ -1310,10 +1351,248 @@ export const useGlobalChat = () => {
     )
 
     const { generateWorkflow } = useWorkflowGeneration()
+    const exportDesign = async (
+        generatedUIId: string,
+        element: HTMLElement | null
+    ) => {
+        if (!element) {
+            console.warn('❌ No element to export for shape:', generatedUIId)
+            toast.error('No design element found for export.')
+            return
+        }
+
+        try {
+            const filename = `generated-ui-${generatedUIId.slice(0, 8)}.png`
+            console.log('📥 Starting snapshot export:', { filename })
+
+            await exportGeneratedUIAsPNG(element, filename)
+
+            toast.success('Design exported successfully!')
+        } catch (error) {
+            console.error('❌ Error exporting design:', error)
+            toast.error('Failed to export design.')
+        }
+    }
+
+    const openChat = (generatedUIId: string) => {
+        setActiveGeneratedUIId(generatedUIId)
+        setIsChatOpen(true)
+    }
+
+    const closeChat = () => {
+        setIsChatOpen(false)
+        setActiveGeneratedUIId(null)
+    }
+
+    const toggleChat = (generatedUIId: string) => {
+        if (isChatOpen && activeGeneratedUIId === generatedUIId) {
+            closeChat()
+        } else {
+            openChat(generatedUIId)
+        }
+    }
 
     return {
         isChatOpen,
         activeGeneratedUIId,
+        openChat,
+        closeChat,
+        toggleChat,
         generateWorkflow,
+        exportDesign,
     }
+}
+
+
+export const useChatWindow = (generatedUIId: string, isOpen: boolean) => {
+    const [inputValue, setInputValue] = useState('')
+    const scrollAreaRef = useRef<HTMLDivElement>(null)
+    const inputRef = useRef<HTMLInputElement>(null)
+    const dispatch = useAppDispatch()
+    const chatState = useAppSelector((state) => state.chat.chats[generatedUIId])
+    const currentShape = useAppSelector(
+        (state) => state.shapes.shapes.entities[generatedUIId]
+    )
+    const allShapes = useAppSelector((state) => state.shapes.shapes.entities)
+
+    const getSourceFrame = (): FrameShape | null => {
+        if (!currentShape || currentShape.type !== 'generatedui') {
+            return null
+        }
+        const sourceFrameId = currentShape.sourceFrameId
+        if (!sourceFrameId) {
+            return null
+        }
+        const sourceFrame = allShapes[sourceFrameId]
+        if (!sourceFrame || sourceFrame.type !== 'frame') {
+            return null
+        }
+        return sourceFrame as FrameShape
+    }
+
+    useEffect(() => {
+        if (isOpen) {
+            dispatch(initializeChat(generatedUIId))
+        }
+    }, [dispatch, generatedUIId, isOpen])
+
+    useEffect(() => {
+        if (scrollAreaRef.current) {
+            scrollAreaRef.current.scrollTop =
+                scrollAreaRef.current.scrollHeight
+        }
+    }, [chatState?.messages])
+
+    useEffect(() => {
+        if (isOpen && inputRef.current) {
+            setTimeout(() => inputRef.current?.focus(), 100)
+        }
+    }, [isOpen])
+
+
+    const handleSendMessage = async () => {
+        if (!inputValue.trim() || chatState?.isStreaming) return
+
+        const message = inputValue.trim()
+        setInputValue('')
+
+        try {
+            dispatch(addUserMessage({ generatedUIId, content: message }))
+            const responseId = `response-${Date.now()}`
+            dispatch(startStreamingResponse({ generatedUIId, messageId: responseId }))
+
+            const isWorkflowPage =
+                currentShape?.type === 'generatedui' && currentShape.isWorkflowPage
+
+            const urlParams = new URLSearchParams(window.location.search)
+            const projectId = urlParams.get('project')
+
+            if (!projectId) {
+                throw new Error('Project ID not found in URL')
+            }
+
+            const baseRequestData = {
+                userMessage: message,
+                generatedUIId: generatedUIId,
+                currentHTML:
+                    currentShape?.type === 'generatedui' ? currentShape.uiSpecData : null,
+                projectId: projectId, // Pass projectId in body
+            }
+
+            let apiEndpoint = '/api/generate/redesign'
+            let wireframeSnapshot: string | null = null
+
+            if (isWorkflowPage) {
+                apiEndpoint = '/api/generate/workflow-redesign'
+            } else {
+                const sourceFrame = getSourceFrame()
+                if (sourceFrame && sourceFrame.type === 'frame') {
+                    try {
+                        const allShapesArray = Object.values(allShapes).filter(
+                            Boolean
+                        ) as Shape[]
+
+                        const snapshot = await generateFrameSnapshot(
+                            sourceFrame,
+                            allShapesArray
+                        )
+                        const arrayBuffer = await snapshot.arrayBuffer()
+                        const base64 = btoa(
+                            String.fromCharCode(...new Uint8Array(arrayBuffer))
+                        )
+                        wireframeSnapshot = base64
+                    } catch (error) {
+                        console.warn('⚠️ Failed to capture source wireframe snapshot:', error)
+                    }
+                } else {
+                    console.warn('⚠️ No source frame available for wireframe snapshot')
+                }
+            }
+
+            const requestData = isWorkflowPage
+                ? baseRequestData
+                : { ...baseRequestData, wireframeSnapshot }
+
+            const response = await fetch(apiEndpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(requestData),
+            })
+
+            if (!response.ok) {
+                throw new Error(`API request failed: ${response.status}`)
+            }
+
+            const reader = response.body?.getReader()
+            const decoder = new TextDecoder()
+            let accumulatedHTML = ''
+
+            if (reader) {
+                while (true) {
+                    const { done, value } = await reader.read()
+                    if (done) break
+
+                    const chunk = decoder.decode(value)
+                    accumulatedHTML += chunk
+
+                    // Update streaming message with "Regenerating design..."
+                    dispatch(
+                        updateStreamingContent({
+                            generatedUIId,
+                            messageId: responseId,
+                            content: 'Regenerating your design...',
+                        })
+                    )
+
+                    // Update the GeneratedUI shape with new HTML in real-time
+                    dispatch(
+                        updateShape({
+                            id: generatedUIId,
+                            patch: { uiSpecData: accumulatedHTML },
+                        })
+                    )
+                }
+            }
+
+            dispatch(
+                finishStreamingResponse({
+                    generatedUIId,
+                    messageId: responseId,
+                    finalContent: '✨ Design regenerated successfully!',
+                })
+            )
+        } catch (error) {
+            console.error('Chat error:', error)
+            dispatch(
+                addErrorMessage({
+                    generatedUIId,
+                    error: error instanceof Error ? error.message : 'Unknown error',
+                })
+            )
+            toast.error('Failed to regenerate design')
+        }
+    }
+
+    const handleKeyPress = (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault()
+            handleSendMessage()
+        }
+    }
+
+    const handleClearChat = () => {
+        dispatch(clearChat(generatedUIId))
+    }
+
+    return {
+        inputValue,
+        setInputValue,
+        scrollAreaRef,
+        inputRef,
+        handleSendMessage,
+        handleKeyPress,
+        handleClearChat,
+        chatState,
+    }
+
 }

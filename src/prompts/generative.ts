@@ -1,18 +1,3 @@
-// //redesign
-// let userPrompt = `Please redesign this UI based on my request: "${userMessage}"`;
-
-// userPrompt += `\n\nWireframe Context: I'm providing a wireframe image that shows the EXACT original design layout and structure that this UI was generated from. This wireframe represents the specific frame that was used to create the current design. Please use this as visual context to understand the intended layout, structure, and design elements when making improvements. The wireframe shows the original wireframe/mockup that the user drew or created.`;
-
-// userPrompt += `\n\nCurrent HTML for reference:\n${currentHTML.substring(
-//   0,
-//   1000
-// )}...`;
-
-
-
-
-
-
 
 // //generate
 // const userPrompt = `Use the user-provided styleGuide for all visual decisions: map its colors, typography scale, spacing, and radii directly to Tailwind v4 utilities (use arbitrary color classes like text-[#RRGGBB] / bg-[#RRGGBB] when hexes are given), enforce WCAG AA contrast (≥4.5:1 body, ≥3:1 large text), and if any token is missing fall back to neutral light defaults. Never invent new tokens; keep usage consistent across components.
@@ -53,11 +38,3 @@
 //       )
 //       .join(", ")}
 //     `;
-
-
-
-
-
-
-
-

@@ -110,7 +110,7 @@ export default function LoginPage() {
                             variant="link"
                             className="px-2"
                             nativeButton={false}
-                            render={<Link href="#">Create account</Link>}
+                            render={<Link href="/auth/sign-up">Create account</Link>}
                         />
                     </p>
                 </div>

@@ -2,15 +2,25 @@
 import { useQuery } from 'convex/react'
 import Link from 'next/link'
 import { usePathname, useSearchParams } from 'next/navigation'
-import React from 'react'
+import React, { useState } from 'react'
 import { api } from '../../../convex/_generated/api'
 import { Id } from '../../../convex/_generated/dataModel'
-import { CircleQuestionMark, Hash, LayoutTemplate, User } from 'lucide-react'
+import { CircleQuestionMark, Hash, LayoutTemplate, User, Settings, LogOut } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar'
 import { Button } from '../ui/button'
 import { useAppSelector } from '@/redux/store'
 import CreateProject from '../button/project'
 import AutoSave from '../canvas/autosave/Autosave'
+import { useAuth } from '@/hooks/use-auth'
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '../ui/dropdown-menu'
+import SettingsDialog from './SettingsDialog'
 
 type TabProps = {
     label: string,
@@ -20,6 +30,8 @@ type TabProps = {
 
 const Navbar = () => {
     const params = useSearchParams()
+    const [isSettingsOpen, setIsSettingsOpen] = useState(false)
+    const { handleSignOut } = useAuth()
 
     const projectId = params.get('project')
     const isValidProjectId = projectId && projectId !== 'null' && projectId !== 'undefined';
@@ -102,16 +114,48 @@ const Navbar = () => {
                 >
                     <CircleQuestionMark className="size-5 text-white" />
                 </Button>
-                <Avatar className="size-12 ml-2">
-                    <AvatarImage src={me?.image || ''} />
-                    <AvatarFallback>
-                        <User className="size-5 text-black" />
-                    </AvatarFallback>
-                </Avatar>
+                
+                <DropdownMenu>
+                    <DropdownMenuTrigger
+                        render={
+                            <button className="cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-white/20 rounded-full">
+                                <Avatar className="size-12 ml-2 transition hover:opacity-80">
+                                    <AvatarImage src={me?.image || ''} />
+                                    <AvatarFallback>
+                                        <User className="size-5 text-black" />
+                                    </AvatarFallback>
+                                </Avatar>
+                            </button>
+                        }
+                    />
+                    <DropdownMenuContent align="end" className="w-56 p-2 rounded-xl bg-zinc-950 border border-white/10 text-white shadow-xl">
+                        <DropdownMenuLabel className="font-normal px-2 py-1.5">
+                            <div className="flex flex-col space-y-1">
+                                <p className="text-sm font-medium leading-none text-white">{me?.name || 'User'}</p>
+                                <p className="text-xs leading-none text-zinc-400">{me?.email}</p>
+                            </div>
+                        </DropdownMenuLabel>
+                        <DropdownMenuSeparator className="bg-white/10 my-1" />
+                        <DropdownMenuItem onClick={() => setIsSettingsOpen(true)} className="cursor-pointer hover:bg-white/10 rounded-md py-1.5 px-2 flex items-center gap-2 text-xs text-zinc-200 hover:text-white transition">
+                            <Settings className="size-4" />
+                            <span>Settings</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator className="bg-white/10 my-1" />
+                        <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-md py-1.5 px-2 flex items-center gap-2 text-xs transition">
+                            <LogOut className="size-4" />
+                            <span>Log out</span>
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+
                 {hasCanvas && <AutoSave />}
                 {!hasCanvas && !hasStyleGuide && <CreateProject />}
             </div>
 
+            <SettingsDialog
+                isOpen={isSettingsOpen}
+                onClose={() => setIsSettingsOpen(false)}
+            />
         </div>
     )
 }
