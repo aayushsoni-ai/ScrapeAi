@@ -5,7 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Slider } from '@/components/ui/slider'
 import { Toggle } from '@/components/ui/toggle'
 import { cn } from '@/lib/utils'
-import { TextShape, updateShape } from '@/redux/slice/shapes'
+import { TextShape, updateShape, pushHistoryState } from '@/redux/slice/shapes'
 import { useAppDispatch, useAppSelector } from '@/redux/store'
 import { Bold, GripVertical, Italic, Palette, Strikethrough, Underline } from 'lucide-react'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -18,7 +18,24 @@ const TextSideBar = ({ isOpen }: Props) => {
     const dispatch = useAppDispatch()
     const selectedShapes = useAppSelector((state) => state.shapes.selected)
     const shapesEntities = useAppSelector((state) => state.shapes.shapes?.entities || {})
+    const shapesState = useAppSelector((state) => state.shapes)
     const [colorInput, setColorInput] = useState('#ffffff')
+
+    const historySnapshotRef = useRef<any>(null)
+
+    const captureSnapshot = () => {
+        historySnapshotRef.current = {
+            shapes: JSON.parse(JSON.stringify(shapesState.shapes)),
+            frameCounter: shapesState.frameCounter,
+        }
+    }
+
+    const commitSnapshot = () => {
+        if (historySnapshotRef.current) {
+            dispatch(pushHistoryState(historySnapshotRef.current))
+            historySnapshotRef.current = null
+        }
+    }
 
     // Drag state
     const [position, setPosition] = useState({ x: 0, y: 0 })
@@ -50,12 +67,13 @@ const TextSideBar = ({ isOpen }: Props) => {
         }
     }, [selectedTextShape?.fill])
 
-    const updateTextProperty = (property: keyof TextShape, value: any) => {
+    const updateTextProperty = (property: keyof TextShape, value: any, isUndoable = true) => {
         if (!selectedTextShape) return
         dispatch(
             updateShape({
                 id: selectedTextShape.id,
                 patch: { [property]: value },
+                isUndoable,
             })
         )
     }
@@ -154,13 +172,14 @@ const TextSideBar = ({ isOpen }: Props) => {
                 </div>
 
                 {/* Font Size */}
-                <div className="space-y-2">
+                <div className="space-y-2" onPointerDown={captureSnapshot}>
                     <Label className="text-white/80">
                         Font Size: {selectedTextShape.fontSize}px
                     </Label>
                     <Slider
                         value={[selectedTextShape.fontSize]}
-                        onValueChange={(val) => updateTextProperty('fontSize', Array.isArray(val) ? val[0] : val)}
+                        onValueChange={(val) => updateTextProperty('fontSize', Array.isArray(val) ? val[0] : val, false)}
+                        onValueCommitted={commitSnapshot}
                         min={8}
                         max={128}
                         step={1}
@@ -169,13 +188,14 @@ const TextSideBar = ({ isOpen }: Props) => {
                 </div>
 
                 {/* Font Weight */}
-                <div className="space-y-2">
+                <div className="space-y-2" onPointerDown={captureSnapshot}>
                     <Label className="text-white/80">
                         Font Weight: {selectedTextShape.fontWeight}
                     </Label>
                     <Slider
                         value={[selectedTextShape.fontWeight]}
-                        onValueChange={(val) => updateTextProperty('fontWeight', Array.isArray(val) ? val[0] : val)}
+                        onValueChange={(val) => updateTextProperty('fontWeight', Array.isArray(val) ? val[0] : val, false)}
+                        onValueCommitted={commitSnapshot}
                         min={100}
                         max={900}
                         step={100}
@@ -246,7 +266,7 @@ const TextSideBar = ({ isOpen }: Props) => {
                             className="bg-white/5 border-white/10 text-white flex-1"
                         />
                         {/* Inline color swatch with native picker */}
-                        <label className="relative w-10 h-10 rounded border border-white/20 cursor-pointer shrink-0 overflow-hidden">
+                        <label className="relative w-10 h-10 rounded border border-white/20 cursor-pointer shrink-0 overflow-hidden" onPointerDown={captureSnapshot}>
                             <div
                                 className="absolute inset-0 rounded"
                                 style={{ backgroundColor: selectedTextShape.fill || '#ffffff' }}
@@ -256,7 +276,8 @@ const TextSideBar = ({ isOpen }: Props) => {
                                 value={selectedTextShape.fill || '#ffffff'}
                                 onChange={(e) => {
                                     setColorInput(e.target.value)
-                                    updateTextProperty('fill', e.target.value)
+                                    commitSnapshot()
+                                    updateTextProperty('fill', e.target.value, true)
                                 }}
                                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                             />

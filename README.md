@@ -1,36 +1,166 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Full Stack Generative UI Designer with Next JS, Convex, Gemini AI, Polar Billing, Inngest, Tailwind CSS
+
+<img width="1280" height="720" alt="Banner" src="./public/banner.png" />
+
+---
+
+## 📋 Table of Contents
+
+- [Overview](#overview)
+- [Tech Stack](#tech-stack)
+- [Features](#features)
+- [Getting Started](#getting-started)
+- [Environment Variables](#environment-variables)
+- [Database Setup](#database-setup)
+
+---
+
+## Overview
+
+A full-stack AI-powered web mockup and React component designer where users sketch elements, describe their design requirements, and the AI writes production-ready responsive layout code that renders live in the browser — similar to Bolt.new or Lovable.
+
+Users get an interactive design canvas, a persistent chat history, instant styling guidelines, and a credit-based subscription system with automated top-ups.
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Framework | Next.js 15 (App Router, TypeScript) |
+| Backend & Database | Convex |
+| Authentication | Convex Auth (Google OAuth, Password Flow) |
+| Billing & Payments | Polar (`@polar-sh/sdk`) |
+| Background Jobs | Inngest |
+| AI Integration | Vercel AI SDK (`ai`) & Gemini AI |
+| State Management | Redux Toolkit (`@reduxjs/toolkit`) |
+| UI Controls | Base UI (`@base-ui/react`) & Shadcn UI |
+| Styling | Tailwind CSS v4 + PostCSS |
+
+---
+
+## Features
+
+### Landing Page
+- Prompt textarea with Rotating Placeholders and suggestions
+- Live preview mockup grid showcasing responsive prototypes
+- Dark mode theme throughout with smooth CSS micro-animations
+
+### Auth (Convex Auth)
+- Secure Google OAuth and email password login flows
+- User accounts auto-provisioned in database upon first-time sign-in
+- Real-time navigation menu controls via user avatar dropdown
+- Settings panel modal to customize profile details (name and avatar URL) and log out of active sessions
+
+### Workspace & Interactive Canvas
+- Left-panel AI chat interface + Right-panel design workspace (Canvas & Style Guide)
+- Interactive canvas supporting sketching shapes (frames, rectangles, ellipses, freehand lines, arrows) and adding text nodes
+- Complete Undo & Redo historical state stacks for layout sketching, shape moving, resizing, styling, and deletions
+- Real-time Redux synchronization component listening to backend database updates and updating client state dynamically
+
+### Generative UI Generation (`/api/generate`)
+- Integration with Gemini AI Models (Gemini 3.5 Flash) via Vercel AI SDK
+- Custom prompt templates mapping user input to Tailwind utility classes
+- Streams generated component structures and updates canvas content instantly
+- Inngest orchestrations for complex background generation events
+
+### Billing & Subscription Plan
+- SaaS integration with Polar handles subscription payments, invoices, and credit balances
+- Dedicated Billing screen showcasing current subscription plan benefits and checkout redirection
+- Webhook endpoints listening for subscription events to adjust credit balances and top up limits
+
+---
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js 22+
+- A Convex developer account and local CLI setup
+- A Google AI Studio API key (Gemini)
+- A Polar Sandbox developer account
+
+### Installation
+
+Clone the repository and install dependencies:
+
+```bash
+git clone https://github.com/aayushsoni-ai/scrapeai.git
+cd scrapeai
+npm install
+```
+
+Start the Convex backend server in a separate terminal:
+
+```bash
+npx convex dev
+```
+
+Run the Inngest local development server:
+
+```bash
+npx inngest-cli@latest dev
+```
+
+Run the Next.js development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the app.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Environment Variables
 
-## Learn More
+Create a `.env.local` file in the root directory:
 
-To learn more about Next.js, take a look at the following resources:
+```env
+# Convex Backend
+CONVEX_DEPLOYMENT=
+NEXT_PUBLIC_CONVEX_URL=
+NEXT_PUBLIC_CONVEX_SITE_URL=
+CONVEX_SITE_URL=
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+# Gemini AI Key
+GOOGLE_GENERATIVE_AI_API_KEY=
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+# Polar Billing Integration
+POLAR_ACCESS_TOKEN=
+POLAR_WEBHOOK_SECRET=
+POLAR_ENV=sandbox
+POLAR_STANDARD_PLAN=
 
-## Deploy on Vercel
+# Inngest Keys
+INNGEST_SIGNING_KEY=
+INNGEST_EVENT_KEY=
+INNGEST_DEV=0
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+# Next App Settings
+NEXT_PUBLIC_APP_URL=http://localhost:3000
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+# Google OAuth Credentials (for Convex Auth)
+CLIENT_ID=
+CLIENT_SECRET=
+```
+
+---
+
+## Database Setup
+
+The database is built on Convex with a fully-typed schema defined in `convex/schema.ts`:
+
+- **users** — user profile records created upon first authentication (email, image, name, etc.).
+- **subscriptions** — user subscription status and credit ledger balances synced from Polar webhook calls.
+- **credits_ledger** — logs detailing credit grant and consumption history for auditing.
+- **projects** — stores design configurations, canvas shape nodes (viewport, sketches, layout metadata), and history states.
+- **project_counters** — auto-incrementing project sequence counters per user.
+
+<img width="1280" height="720" alt="Database" src="./public/database.png" />
+
+---
+
+## 🌟 Show your support
+
+Give a ⭐ if this project helped you learn something new!

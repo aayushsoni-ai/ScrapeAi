@@ -1,5 +1,5 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
-import { query } from "./_generated/server";
+import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
 
 
@@ -22,3 +22,23 @@ export const getUserIdByEmail = query({
         return user?._id ?? null
     },
 })
+
+export const updateProfile = mutation({
+    args: {
+        name: v.optional(v.string()),
+        image: v.optional(v.string()),
+    },
+    handler: async (ctx, args) => {
+        const userId = await getAuthUserId(ctx);
+        if (!userId) {
+            throw new Error("Unauthorized");
+        }
+
+        const patch: { name?: string; image?: string } = {};
+        if (args.name !== undefined) patch.name = args.name;
+        if (args.image !== undefined) patch.image = args.image;
+
+        await ctx.db.patch(userId, patch);
+        return await ctx.db.get(userId);
+    },
+});
