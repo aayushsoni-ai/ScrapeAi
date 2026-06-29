@@ -71,7 +71,7 @@ const Navbar = () => {
                     href={`/dashboard/${me?.name || ''}`}
                     className="flex items-center gap-2 group"
                 >
-                    <ArrowLeftCircleIcon />
+                    <img src="/icon.svg" alt="ScrapeAi Logo" className="w-5 h-5 rounded object-contain invert" /><span className="font-bold text-xs tracking-wider text-white">ScrapeAi</span>
                 </Link>
                 {project && (!hasCanvas ||
                     (!hasStyleGuide && (
