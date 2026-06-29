@@ -67,18 +67,17 @@ const Navbar = () => {
     return (
         <div className="grid grid-cols-2 lg:grid-cols-3 p-6 fixed top-0 left-0 right-0 z-50">
             <div className="flex items-center gap-4">
-                <Link
-                    href={`/dashboard/${me?.name || ''}`}
-                    className="flex items-center gap-2 group"
-                >
-                    <img src="/icon.svg" alt="ScrapeAi Logo" className="w-5 h-5 rounded object-contain invert" /><span className="font-bold text-xs tracking-wider text-white">ScrapeAi</span>
-                </Link>
-                {project && (!hasCanvas ||
-                    (!hasStyleGuide && (
-                        <div className="lg:inline-block hidden rounded-full text-primary/60 border border-white/12 backdrop-blur-xl bg-white/8 px-4 py-2 text-sm saturate-150">
-                            Project / {project.name}
-                        </div>
-                    )))}
+                <img src="/icon.svg" alt="ScrapeAi Logo" className="w-5 h-5 rounded object-contain invert" />
+                <span className="font-bold text-xs tracking-wider text-white">ScrapeAi</span>
+                {project && (hasCanvas || hasStyleGuide) && (
+                    <Link
+                        href={`/dashboard/${me?.name || ''}`}
+                        className="lg:inline-flex hidden items-center gap-2 rounded-full text-primary/60 border border-white/12 backdrop-blur-xl bg-white/8 px-4 py-2 text-sm saturate-150 hover:bg-white/12 transition"
+                    >
+                        <ArrowLeftCircleIcon className="w-4 h-4" />
+                        <span>Project / {project.name}</span>
+                    </Link>
+                )}
             </div>
 
             <div className="lg:flex hidden items-center justify-center gap-2">
