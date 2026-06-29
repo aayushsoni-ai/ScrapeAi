@@ -1,16 +1,22 @@
+'use client'
 import { LogoIcon } from '@/components/logo'
 import Google from '@/components/button/oauth/google' 
 import Microsoft from '@/components/button/oauth/microsoft' 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { useAuth } from '@/hooks/use-auth'
 import Link from 'next/link'
+import { Loader2 } from 'lucide-react'
 
 export default function LoginPage() {
+    const { signUpForm, handleSignUp, isLoading } = useAuth()
+    const { register, formState: { errors } } = signUpForm
+
     return (
         <section className="flex min-h-screen bg-zinc-50 px-4 py-16 md:py-32 dark:bg-transparent">
             <form
-                action=""
+                onSubmit={handleSignUp}
                 className="bg-muted m-auto h-fit w-full max-w-sm overflow-hidden rounded-[calc(var(--radius)+.125rem)] border shadow-md shadow-zinc-950/5 dark:[--color-muted:var(--color-zinc-900)]">
                 <div className="bg-card -m-px rounded-[calc(var(--radius)+.125rem)] border p-8 pb-6">
                     <div className="text-center">
@@ -34,10 +40,13 @@ export default function LoginPage() {
                             </Label>
                             <Input
                                 type="email"
-                                required
-                                name="email"
                                 id="email"
+                                {...register('email')}
+                                className={errors.email ? 'border-destructive' : ''}
                             />
+                            {errors.email && (
+                                <p className='text-xs text-destructive'>{errors.email?.message}</p>
+                            )}
                         </div>
 
                         <div className="space-y-0.5">
@@ -62,14 +71,33 @@ export default function LoginPage() {
                             </div>
                             <Input
                                 type="password"
-                                required
-                                name="pwd"
                                 id="pwd"
-                                className="input sz-md variant-mixed"
+                                {...register('password')}
+                                className={errors.password ? 'border-destructive' : ''}
                             />
+                            {errors.password && (
+                                <p className='text-xs text-destructive'>{errors.password?.message}</p>
+                            )}
                         </div>
 
-                        <Button className="w-full">Sign Up</Button>
+                        {errors.root && (
+                            <div className='rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-center'>
+                                <p className='text-xs text-destructive'>{errors.root.message}</p>
+                                {errors.root.message?.includes('sign in') && (
+                                    <Link href="/auth/sign-in" className='mt-1 inline-block text-xs font-medium text-primary underline underline-offset-2 hover:opacity-80 transition'>
+                                        Go to Sign In →
+                                    </Link>
+                                )}
+                            </div>
+                        )}
+
+                        <Button type='submit' disabled={isLoading} className="w-full">
+                            {isLoading ? (
+                                <>
+                                    <Loader2 className='mr-2 h-4 w-4 animate-spin' />Signing Up...
+                                </>
+                            ) : ('Sign Up')}
+                        </Button>
                     </div>
 
                     <div className="my-6 grid grid-cols-[1fr_auto_1fr] items-center gap-3">

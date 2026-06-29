@@ -41,10 +41,17 @@ export const useAuth = () => {
       await signIn("password", { ...data, flow: "signIn" });
       router.push("/dashboard");
     }
-    catch(error){
-        signInForm.setError('password',{
-            message: 'Invalid email password',
-        })
+    catch(error: unknown){
+        const message = error instanceof Error ? error.message : '';
+        if (message.toLowerCase().includes('could not find') || message.toLowerCase().includes('no account') || message.toLowerCase().includes('invalid')) {
+          signInForm.setError('root', {
+            message: 'Account not found. Please sign up first.',
+          });
+        } else {
+          signInForm.setError('root', {
+            message: 'Invalid email or password. Please try again.',
+          });
+        }
     }
      finally {
       setIsLoading(false);
@@ -56,14 +63,23 @@ export const useAuth = () => {
     try {
       await signIn("password", { ...data, flow: "signUp" });
       router.push("/dashboard");
-    }catch(error){
-        signUpForm.setError('root',{
-            message: 'Failed to create account. Email may already exist',
-        })}
-         finally {
+    }catch(error: unknown){
+        const message = error instanceof Error ? error.message : '';
+        if (message.toLowerCase().includes('already exist') || message.toLowerCase().includes('unique') || message.toLowerCase().includes('duplicate')) {
+          signUpForm.setError('root', {
+            message: 'An account with this email already exists. Please sign in instead.',
+          });
+        } else {
+          signUpForm.setError('root', {
+            message: 'Failed to create account. Please try with a different email.',
+          });
+        }
+    }
+     finally {
       setIsLoading(false);
     }
   });
+
 
   const handleSignOut = async () => {
     try {

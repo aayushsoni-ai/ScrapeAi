@@ -87,7 +87,14 @@ export default function LoginPage() {
                         </div>
                         {
                             errors.root && (
-                                <p className='text-xs text-destructive text-center'>{errors.root.message}</p>
+                                <div className='rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-center'>
+                                    <p className='text-xs text-destructive'>{errors.root.message}</p>
+                                    {errors.root.message?.includes('sign up') && (
+                                        <Link href="/auth/sign-up" className='mt-1 inline-block text-xs font-medium text-primary underline underline-offset-2 hover:opacity-80 transition'>
+                                            Go to Sign Up →
+                                        </Link>
+                                    )}
+                                </div>
                             )
                         }
 

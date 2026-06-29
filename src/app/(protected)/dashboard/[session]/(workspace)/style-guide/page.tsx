@@ -7,6 +7,7 @@ import { StyleGuide } from '@/redux/api/style-guide'
 import { Palette } from 'lucide-react'
 import React from 'react'
 import MoodBoard from '@/components/styles/MoodBoard'
+import NoProjectSelected from '@/components/shared/NoProjectSelected'
 type Props = {
   searchParams: Promise<{
     project: string
@@ -15,6 +16,11 @@ type Props = {
 
 const StyleGuidePage = async ({ searchParams }: Props) => {
   const projectId = (await searchParams).project
+
+  if (!projectId) {
+    return <NoProjectSelected />
+  }
+
   const existingStyleGuide = await StyleGuideQuery(projectId)
   const guide = existingStyleGuide.styleGuide?._valueJSON as unknown as StyleGuide
 

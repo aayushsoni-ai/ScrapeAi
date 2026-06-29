@@ -2,6 +2,7 @@
 import InfiniteCanvas from '@/components/canvas/InfiniteCanvas'
 import ProjectProvider from '@/components/projects/provider'
 import { ProjectQuery } from '@/convex/query.config'
+import NoProjectSelected from '@/components/shared/NoProjectSelected'
 import React from 'react'
 
 interface CanvasPageProps {
@@ -13,11 +14,7 @@ const CanvasPage = async ({ searchParams }: CanvasPageProps) => {
     const projectId = params.project
 
     if (!projectId) {
-        return (
-            <div className="w-full h-screen flex items-center justify-center">
-                <p className="text-muted-foreground">No project selected</p>
-            </div>
-        )
+        return <NoProjectSelected />
     }
 
     const { project, profile } = await ProjectQuery(projectId)
