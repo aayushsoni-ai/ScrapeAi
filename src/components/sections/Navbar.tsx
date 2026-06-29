@@ -19,8 +19,10 @@ import {
     DropdownMenuLabel,
     DropdownMenuSeparator,
     DropdownMenuTrigger,
+    DropdownMenuGroup,
 } from '../ui/dropdown-menu'
 import SettingsDialog from './SettingsDialog'
+import PricingDialog from './PricingDialog'
 
 type TabProps = {
     label: string,
@@ -31,6 +33,7 @@ type TabProps = {
 const Navbar = () => {
     const params = useSearchParams()
     const [isSettingsOpen, setIsSettingsOpen] = useState(false)
+    const [isPricingOpen, setIsPricingOpen] = useState(false)
     const { handleSignOut } = useAuth()
 
     const projectId = params.get('project')
@@ -66,9 +69,10 @@ const Navbar = () => {
             <div className="flex items-center gap-4">
                 <Link
                     href={`/dashboard/${me?.name || ''}`}
-                    className="w-8 h-8 rounded-full border-3 border-white bg-black flex items-center justify-center"
+                    className="flex items-center gap-2 group"
                 >
-                    <div className="w-4 h-4 rounded-full bg-white"></div>
+                    <img src="/icon.svg" alt="ScrapeAi Logo" className="w-5 h-5 rounded object-contain invert" />
+                    <span className="font-semibold text-xs tracking-wider text-white hidden sm:inline-block">ScrapeAi</span>
                 </Link>
                 {project && (!hasCanvas ||
                     (!hasStyleGuide && (
@@ -107,18 +111,24 @@ const Navbar = () => {
             </div>
 
             <div className="flex items-center gap-4 justify-end">
-                <span className="text-sm text-white/50">{creditBalance} credits</span>
-                <Button
+                <button
+                    onClick={() => setIsPricingOpen(true)}
+                    className="px-3.5 py-1.5 rounded-full bg-zinc-900 border border-zinc-800 text-[9px] font-bold text-zinc-300 hover:text-white uppercase tracking-wider transition cursor-pointer"
+                >
+                    Upgrade
+                </button>
+                <span className="text-xs text-white/50">{creditBalance} credits</span>
+                {/* <Button
                     variant="secondary"
                     className="rounded-full h-12 w-12 flex items-center justify-center backdrop-blur-xl bg-white/8 border border-white/12 saturate-150 hover:bg-white/12"
                 >
                     <CircleQuestionMark className="size-5 text-white" />
-                </Button>
-                
+                </Button> */}
+
                 <DropdownMenu>
                     <DropdownMenuTrigger
                         render={
-                            <button className="cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-white/20 rounded-full">
+                            <button id="user-menu-trigger" className="cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-white/20 rounded-full">
                                 <Avatar className="size-12 ml-2 transition hover:opacity-80">
                                     <AvatarImage src={me?.image || ''} />
                                     <AvatarFallback>
@@ -129,12 +139,14 @@ const Navbar = () => {
                         }
                     />
                     <DropdownMenuContent align="end" className="w-56 p-2 rounded-xl bg-zinc-950 border border-white/10 text-white shadow-xl">
-                        <DropdownMenuLabel className="font-normal px-2 py-1.5">
-                            <div className="flex flex-col space-y-1">
-                                <p className="text-sm font-medium leading-none text-white">{me?.name || 'User'}</p>
-                                <p className="text-xs leading-none text-zinc-400">{me?.email}</p>
-                            </div>
-                        </DropdownMenuLabel>
+                        <DropdownMenuGroup>
+                            <DropdownMenuLabel className="font-normal px-2 py-1.5">
+                                <div className="flex flex-col space-y-1">
+                                    <p className="text-sm font-medium leading-none text-white">{me?.name || 'User'}</p>
+                                    <p className="text-xs leading-none text-zinc-400">{me?.email}</p>
+                                </div>
+                            </DropdownMenuLabel>
+                        </DropdownMenuGroup>
                         <DropdownMenuSeparator className="bg-white/10 my-1" />
                         <DropdownMenuItem onClick={() => setIsSettingsOpen(true)} className="cursor-pointer hover:bg-white/10 rounded-md py-1.5 px-2 flex items-center gap-2 text-xs text-zinc-200 hover:text-white transition">
                             <Settings className="size-4" />
@@ -152,6 +164,10 @@ const Navbar = () => {
                 {!hasCanvas && !hasStyleGuide && <CreateProject />}
             </div>
 
+            <PricingDialog
+                isOpen={isPricingOpen}
+                onClose={() => setIsPricingOpen(false)}
+            />
             <SettingsDialog
                 isOpen={isSettingsOpen}
                 onClose={() => setIsSettingsOpen(false)}

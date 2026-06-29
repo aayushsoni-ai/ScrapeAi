@@ -53,7 +53,7 @@ const Page = () => {
             if (redirected.current) return;
             setTimedOut(true);
             redirected.current = true;
-            router.replace(`/billing/${me.name}`);
+            router.replace("/dashboard");
         }, 45_000);
 
         return () => clearTimeout(t);
