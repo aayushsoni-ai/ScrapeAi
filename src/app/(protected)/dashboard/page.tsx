@@ -3,10 +3,7 @@ import { redirect } from 'next/navigation';
 import { combinedSlug } from '@/lib/utils';
 
 const DashboardPage = async () => {
-    const { entitlement, profile: profileName } = await SubscriptionEntitlementQuery()
-    if (!entitlement._valueJSON) {
-        redirect(`billing/${combinedSlug(profileName!)}`)
-    }
+    const { profile: profileName } = await SubscriptionEntitlementQuery()
     redirect(`/dashboard/${combinedSlug(profileName!)}`)
 }
 export default DashboardPage

@@ -9,14 +9,9 @@ type Props = {
 }
 
 const WorkspaceLayout = async ({ children }: Props) => {
-  const { entitlement, profile: profileName } = await SubscriptionEntitlementQuery()
-  if (!entitlement._valueJSON) {
-    redirect(`/billing/${combinedSlug(profileName!)}`)
-  }
   return <div className='grid grid-cols-1'>
     <Navbar />
     {children}</div>
-
 }
 
 export default WorkspaceLayout

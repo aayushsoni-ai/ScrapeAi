@@ -68,7 +68,7 @@ export const useAuth = () => {
   const handleSignOut = async () => {
     try {
         await signOut()
-        router.push('/auth/sign-in')
+        window.location.href = '/'
     } catch (error) {
         console.error("SignOut error !!", error)
     }

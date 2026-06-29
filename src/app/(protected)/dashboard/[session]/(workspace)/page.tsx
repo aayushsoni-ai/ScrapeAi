@@ -23,7 +23,7 @@ const WorkspacePage = async () => {
 
   return (
     <ProjectsProvider initialProjects={projects}>
-      <div className='container mx-auto py-36 px-4'>
+      <div className="container mx-auto py-36 px-4">
         <ProjectsList />
       </div>
     </ProjectsProvider>

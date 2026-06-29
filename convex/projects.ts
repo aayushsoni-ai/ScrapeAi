@@ -191,3 +191,51 @@ export const updateProjectStyleGuide = mutation({
     return { success: true, styleGuide: styleGuideData }
   },
 })
+
+export const renameProject = mutation({
+  args: {
+    projectId: v.id('projects'),
+    name: v.string(),
+  },
+  handler: async (ctx, { projectId, name }) => {
+    const userId = await getAuthUserId(ctx)
+    if (!userId) throw new Error('Not authenticated')
+
+    const project = await ctx.db.get(projectId)
+    if (!project) throw new Error('Project not found')
+
+    if (project.userId !== userId) {
+      throw new Error('Access denied')
+    }
+
+    await ctx.db.patch(projectId, {
+      name: name.trim(),
+      lastModified: Date.now(),
+    })
+
+    return { success: true }
+  },
+})
+
+export const deleteProject = mutation({
+  args: {
+    projectId: v.id('projects'),
+  },
+  handler: async (ctx, { projectId }) => {
+    const userId = await getAuthUserId(ctx)
+    if (!userId) throw new Error('Not authenticated')
+
+    const project = await ctx.db.get(projectId)
+    if (!project) {
+      console.log('⚠️ [Convex] Project already deleted or not found:', projectId)
+      return { success: true }
+    }
+
+    if (project.userId !== userId) {
+      throw new Error('Access denied')
+    }
+
+    await ctx.db.delete(projectId)
+    return { success: true }
+  },
+})
