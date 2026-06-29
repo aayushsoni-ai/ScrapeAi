@@ -5,7 +5,7 @@ import { usePathname, useSearchParams } from 'next/navigation'
 import React, { useState } from 'react'
 import { api } from '../../../convex/_generated/api'
 import { Id } from '../../../convex/_generated/dataModel'
-import { CircleQuestionMark, Hash, LayoutTemplate, User, Settings, LogOut } from 'lucide-react'
+import { Hash, LayoutTemplate, User, Settings, LogOut, ArrowLeftCircleIcon } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar'
 import { Button } from '../ui/button'
 import { useAppSelector } from '@/redux/store'
@@ -71,8 +71,7 @@ const Navbar = () => {
                     href={`/dashboard/${me?.name || ''}`}
                     className="flex items-center gap-2 group"
                 >
-                    <img src="/icon.svg" alt="ScrapeAi Logo" className="w-5 h-5 rounded object-contain invert" />
-                    <span className="font-semibold text-xs tracking-wider text-white hidden sm:inline-block">ScrapeAi</span>
+                    <ArrowLeftCircleIcon />
                 </Link>
                 {project && (!hasCanvas ||
                     (!hasStyleGuide && (
