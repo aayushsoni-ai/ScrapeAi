@@ -116,7 +116,7 @@ export const handlePolarEvent = inngest.createFunction(
             canceledAt: toMs(sub?.canceled_at),
             seats: sub?.seats ?? undefined,
             metadata: dataUnknown, // Keep as any to match Convex schema
-            creditsGrantPerPeriod: 10,
+            creditsGrantPerPeriod: 100,
             creditsRolloverLimit: 100,
         }
 
@@ -197,7 +197,7 @@ export const handlePolarEvent = inngest.createFunction(
                         {
                             subscriptionId,
                             idempotencyKey: idk,
-                            amount: 10,
+                            amount: 100,
                             reason: looksCreate ? 'initial-grant' : 'periodic-grant',
                         }
                     )
@@ -215,7 +215,7 @@ export const handlePolarEvent = inngest.createFunction(
                     id: `credits-granted:${polarSubscriptionId}:${currentPeriodEnd ?? 'first'}`,
                     data: {
                         userId,
-                        amount: 'granted' in grant ? (grant.granted ?? 10) : 10,
+                        amount: 'granted' in grant ? (grant.granted ?? 100) : 100,
                         balance: 'balance' in grant ? grant.balance : undefined,
                         periodEnd: currentPeriodEnd,
                     },
