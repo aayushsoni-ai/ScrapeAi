@@ -223,7 +223,20 @@ const InspirationSideBar = ({ isOpen, onClose }: InspirationSidebarProps) => {
                 "fixed left-5 top-1/2 transform -translate-y-1/2 w-80 backdrop-blur-xl bg-white/8 border-white/12 gap-2 p-3 saturate-150 border rounded-lg z-50 transition-transform duration-300"
             )}
         >
-
+            <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                    <ImageIcon className="w-4 h-4 text-white/60" />
+                    <Label className="text-white/70 text-sm font-medium">Inspiration</Label>
+                </div>
+                <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={onClose}
+                    className="h-7 w-7 p-0 text-white/60 hover:text-white hover:bg-white/10"
+                >
+                    <X className="w-4 h-4" />
+                </Button>
+            </div>
             <div
                 className={cn(
                     'border-2 border-dashed rounded-lg p-6 text-center transition-all duration-200 cursor-pointer',
