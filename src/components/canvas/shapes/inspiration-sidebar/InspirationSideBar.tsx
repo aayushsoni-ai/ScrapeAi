@@ -217,6 +217,8 @@ const InspirationSideBar = ({ isOpen, onClose }: InspirationSidebarProps) => {
         setImages((prev) => prev.filter((img) => img.id !== imageId))
     }
 
+    if (!isOpen) return null
+
     return (
         <div
             className={cn(
