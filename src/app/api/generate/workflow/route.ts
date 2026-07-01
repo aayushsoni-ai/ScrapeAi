@@ -39,21 +39,12 @@ export async function POST(request: NextRequest) {
             )
         }
 
-        // Consume credits
-        const { ok } = await ConsumeCreditsQuery({ amount: 1 })
-        if (!ok) {
-            return NextResponse.json(
-                { error: 'Failed to consume credits' },
-                { status: 500 }
-            )
-        }
-
         // Get project ID from request body for style guide
         const styleGuide = await StyleGuideQuery(projectId)
         const styleGuideData = styleGuide.styleGuide._valueJSON as unknown as {
             colorSections: unknown[]
             typographySections: unknown[]
-        }
+        } | null
 
         // Get inspiration images
         const inspirationResult = await InspirationImagesQuery(projectId)
@@ -184,6 +175,15 @@ Please generate a complete, professional HTML page that serves as a ${selectedPa
             system: prompts.generativeUi.system,
             temperature: 0.7,
         })
+
+        // Consume credits ONLY after AI generation starts successfully
+        const { ok } = await ConsumeCreditsQuery({ amount: 1 })
+        if (!ok) {
+            return NextResponse.json(
+                { error: 'Failed to consume credits' },
+                { status: 500 }
+            )
+        }
 
         // Convert to streaming response
         const stream = new ReadableStream({

@@ -32,22 +32,13 @@ export async function POST(request: NextRequest) {
             )
         }
 
-        // Consume credits (workflow redesign consumes 4 credits)
-        const { ok } = await ConsumeCreditsQuery({ amount: 4 })
-        if (!ok) {
-            return NextResponse.json(
-                { error: 'Failed to consume credits' },
-                { status: 500 }
-            )
-        }
-
         console.log(currentHTML, 'currentHTML')
 
         const styleGuide = await StyleGuideQuery(projectId)
         const styleGuideData = styleGuide.styleGuide._valueJSON as unknown as {
             colorSections: unknown[]
             typographySections: unknown[]
-        }
+        } | null
 
         //workflow redesign
         let userPrompt = `CRITICAL: You are redesigning a SPECIFIC WORKFLOW PAGE, not creating a new page from scratch.
@@ -80,7 +71,7 @@ IMPORTANT:
 - DO redesign the specific workflow page shown in the HTML above
 - DO apply the user's changes to that specific page
 
-    colors: ${styleGuideData.colorSections
+    colors: ${(styleGuideData?.colorSections || [])
                 .map((color: any) =>
                     color.swatches
                         .map((swatch: any) => {
@@ -89,7 +80,7 @@ IMPORTANT:
                         .join(", ")
                 )
                 .join(", ")}
-    typography: ${styleGuideData.typographySections
+    typography: ${(styleGuideData?.typographySections || [])
                 .map((typography: any) =>
                     typography.styles
                         .map((style: any) => {
@@ -120,6 +111,15 @@ Please generate the modified version of the provided workflow page HTML with the
             system: prompts.generativeUi.system,
             temperature: 0.7,
         })
+
+        // Consume credits ONLY after AI generation starts successfully (workflow redesign consumes 4 credits)
+        const { ok } = await ConsumeCreditsQuery({ amount: 4 })
+        if (!ok) {
+            return NextResponse.json(
+                { error: 'Failed to consume credits' },
+                { status: 500 }
+            )
+        }
 
         // Convert to streaming response
         const stream = new ReadableStream({

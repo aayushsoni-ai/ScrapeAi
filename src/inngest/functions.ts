@@ -116,7 +116,7 @@ export const handlePolarEvent = inngest.createFunction(
             canceledAt: toMs(sub?.canceled_at),
             seats: sub?.seats ?? undefined,
             metadata: dataUnknown, // Keep as any to match Convex schema
-            creditsGrantPerPeriod: 100,
+            creditsGrantPerPeriod: 50,
             creditsRolloverLimit: 100,
         }
 
