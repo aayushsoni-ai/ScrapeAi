@@ -450,18 +450,21 @@ import {
       },
       loadProject(
         state,
-        action: PayloadAction<Partial<{
-          shapes: EntityState<Shape, string>;
-          tool: Tool;
-          selected: SelectionMap;
-          frameCounter: number;
-        }>>
+        action: PayloadAction<any>
       ) {
-        // Load project data into the shapes state
-        state.shapes = action.payload.shapes || shapesAdapter.getInitialState();
-        state.tool = action.payload.tool || "select";
-        state.selected = action.payload.selected || {};
-        state.frameCounter = action.payload.frameCounter || 0;
+        const payload = action.payload || {};
+        const shapes = payload.shapes;
+        
+        // Strictly validate that shapes is a valid EntityState
+        if (shapes && Array.isArray(shapes.ids) && typeof shapes.entities === 'object') {
+          state.shapes = shapes;
+        } else {
+          state.shapes = shapesAdapter.getInitialState();
+        }
+
+        state.tool = payload.tool || "select";
+        state.selected = payload.selected || {};
+        state.frameCounter = typeof payload.frameCounter === 'number' ? payload.frameCounter : 0;
         state.past = [];
         state.future = [];
       },
