@@ -11,10 +11,14 @@ type Props = {
 
 const ProjectProvider = ({ children, initialProject }: Props) => {
     const dispatch = useAppDispatch()
+    const loadedProjectId = React.useRef<string | null>(null)
 
     useEffect(() => {
         if (initialProject?._valueJSON) {
             const projectsData = initialProject._valueJSON
+            
+            if (loadedProjectId.current === projectsData._id) return
+            loadedProjectId.current = projectsData._id
             
             if (projectsData.sketchesData) {
                 dispatch(loadProject(projectsData.sketchesData))

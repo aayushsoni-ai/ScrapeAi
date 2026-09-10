@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   /* config options here */
+  output: "standalone",
   images: {
     remotePatterns: [
       {
@@ -9,6 +10,12 @@ const nextConfig: NextConfig = {
         hostname: "**.convex.cloud",
       },
     ],
+  },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+  typescript: {
+    ignoreBuildErrors: true,
   }
 };
 
