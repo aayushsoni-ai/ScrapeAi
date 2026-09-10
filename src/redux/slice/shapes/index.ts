@@ -450,18 +450,18 @@ import {
       },
       loadProject(
         state,
-        action: PayloadAction<{
+        action: PayloadAction<Partial<{
           shapes: EntityState<Shape, string>;
           tool: Tool;
           selected: SelectionMap;
           frameCounter: number;
-        }>
+        }>>
       ) {
         // Load project data into the shapes state
-        state.shapes = action.payload.shapes;
-        state.tool = action.payload.tool;
-        state.selected = action.payload.selected;
-        state.frameCounter = action.payload.frameCounter;
+        state.shapes = action.payload.shapes || shapesAdapter.getInitialState();
+        state.tool = action.payload.tool || "select";
+        state.selected = action.payload.selected || {};
+        state.frameCounter = action.payload.frameCounter || 0;
         state.past = [];
         state.future = [];
       },
