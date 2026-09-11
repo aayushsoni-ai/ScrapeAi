@@ -3,7 +3,7 @@ import { AlertCircle, CheckCircle, Loader2 } from 'lucide-react'
 import { useAppSelector } from '@/redux/store'
 import React, { useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { useAutosaveProjectMutation } from '@/redux/api/project'
+
 import { useMutation } from 'convex/react'
 import { api } from '../../../../convex/_generated/api'
 import { Id } from '../../../../convex/_generated/dataModel'
@@ -15,7 +15,7 @@ const AutoSave = () => {
     const shapesState = useAppSelector((state) => state.shapes)
 
     const updateSketches = useMutation(api.projects.updateProjectSketches)
-    const isSaving = false // Replaced with saveStatus logic
+
     const viewportState = useAppSelector((state) => state.viewport)
 
     const abortRef = useRef<AbortController | null>(null)
@@ -68,7 +68,7 @@ const AutoSave = () => {
             if (debouncerRef.current) clearTimeout(debouncerRef.current)
         }
 
-    }, [isReady, shapesState, user?.id, viewportState, projectId, autosaveProject])
+    }, [isReady, shapesState, user?.id, viewportState, projectId, updateSketches])
 
     useEffect(() => {
         return () => {
@@ -79,16 +79,13 @@ const AutoSave = () => {
 
     if (!isReady) return null
 
-    if (isSaving) {
-        return (
-            <div className='flex items-center'>
-                <Loader2 className='w-4 h-4 animate-spin' />
-            </div>
-        )
-    }
-
-
     switch (saveStatus) {
+        case 'saving':
+            return (
+                <div className='flex items-center'>
+                    <Loader2 className='w-4 h-4 animate-spin' />
+                </div>
+            )
         case 'saved':
             return (
                 <div className="flex items-center">
