@@ -164,3 +164,24 @@ The database is built on Convex with a fully-typed schema defined in `convex/sch
 ## 🌟 Show your support
 
 Give a ⭐ if this project helped you learn something new!
+
+---
+
+## Deployment (AWS EC2 & Docker)
+
+This application is fully containerized and configured for automated deployment to an AWS EC2 instance.
+
+### Architecture
+- **Docker**: The Next.js application runs inside a Docker container (Node.js Alpine environment) configured to optimize memory (`NODE_OPTIONS="--max-old-space-size=2048"`).
+- **Web Server & Reverse Proxy**: Nginx handles incoming public traffic on ports `80` and `443` and proxies requests internally to the Docker container on port `3000`.
+- **SSL / HTTPS**: Let's Encrypt (Certbot) provides free, auto-renewing SSL certificates.
+- **Custom Domain**: Managed dynamically (e.g., via DuckDNS) pointing to the AWS EC2 Elastic IP.
+
+### CI/CD Pipeline (GitHub Actions)
+Continuous deployment is handled via GitHub Actions. Whenever code is pushed to the `main` branch, the `.github/workflows/deploy.yml` pipeline automatically:
+1. Connects to the EC2 instance via SSH.
+2. Pulls the latest code from GitHub.
+3. Rebuilds the Docker image and restarts the container using `docker compose up -d --build`.
+
+### Environment Configuration on Server
+Production environment variables are securely stored in an `.env` file on the EC2 host. The `docker-compose.yml` automatically mounts these variables into the container at runtime. Note that both `NEXT_PUBLIC_APP_URL` and `CONVEX_SITE_URL` must point to the live HTTPS domain for Convex Auth and OAuth redirects to function securely.
