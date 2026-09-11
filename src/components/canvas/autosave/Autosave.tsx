@@ -4,6 +4,9 @@ import { useAppSelector } from '@/redux/store'
 import React, { useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useAutosaveProjectMutation } from '@/redux/api/project'
+import { useMutation } from 'convex/react'
+import { api } from '../../../../convex/_generated/api'
+import { Id } from '../../../../convex/_generated/dataModel'
 
 const AutoSave = () => {
     const searchParams = useSearchParams()
@@ -11,8 +14,8 @@ const AutoSave = () => {
     const user = useAppSelector((state) => state.profile.user)
     const shapesState = useAppSelector((state) => state.shapes)
 
-    const [autosaveProject, { isLoading: isSaving }] =
-        useAutosaveProjectMutation()
+    const updateSketches = useMutation(api.projects.updateProjectSketches)
+    const isSaving = false // Replaced with saveStatus logic
     const viewportState = useAppSelector((state) => state.viewport)
 
     const abortRef = useRef<AbortController | null>(null)
@@ -42,15 +45,15 @@ const AutoSave = () => {
             setSaveStatus('saving')
 
             try {
-                await autosaveProject({
-                    projectId: projectId as string,
-                    userId: user?.id as string,
-                    shapesData: shapesState,
+                await updateSketches({
+                    projectId: projectId as Id<"projects">,
+                    userId: user?.id as Id<"users">,
+                    sketchesData: shapesState,
                     viewportData: {
                         scale: viewportState.scale,
                         translate: viewportState.translate,
                     },
-                }).unwrap()
+                })
                 setSaveStatus('saved')
                 setTimeout(() => setSaveStatus('idle'), 1500)
             } catch (error) {
