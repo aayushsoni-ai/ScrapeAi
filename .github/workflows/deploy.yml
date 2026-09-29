@@ -10,12 +10,20 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Debug - Test SSH connectivity
+        run: |
+          echo "Testing connectivity to EC2..."
+          nc -zv -w 10 ${{ secrets.EC2_HOST }} 22 || echo "Port 22 not reachable"
+
       - name: Deploy to EC2 via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
+          timeout: 30s
+          command_timeout: 10m
+          debug: true
           script: |
             cd ~/ScrapeAi
             git pull origin main
