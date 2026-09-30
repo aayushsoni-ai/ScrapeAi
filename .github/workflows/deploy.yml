@@ -63,14 +63,18 @@ jobs:
           timeout: 30s
           command_timeout: 5m
           script: |
+            # Convert to lowercase (Docker requires it)
+            IMAGE_NAME=$(echo "ghcr.io/${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+
             # Login to GitHub Container Registry
             echo ${{ secrets.GHCR_TOKEN }} | docker login ghcr.io -u ${{ secrets.GHCR_USER }} --password-stdin
 
             # Pull the latest image
-            docker pull ghcr.io/${{ github.repository }}:latest
+            docker pull ${IMAGE_NAME}:latest
 
             # Stop and remove old container
-            docker compose -f ~/ScrapeAi/docker-compose.yml down || true
+            docker stop scrapeai-web 2>/dev/null || true
+            docker rm scrapeai-web 2>/dev/null || true
 
             # Run new container
             docker run -d \
@@ -78,4 +82,5 @@ jobs:
               --restart unless-stopped \
               -p 3000:3000 \
               --env-file ~/ScrapeAi/.env \
-              ghcr.io/${{ github.repository }}:latest
+              ${IMAGE_NAME}:latest
+
